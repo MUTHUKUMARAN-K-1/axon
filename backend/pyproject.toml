@@ -1,0 +1,9 @@
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[project]
+name = "axon-backend"
+version = "1.0.0"
+description = "AXON — Neural Intelligence Layer for X Layer"
+requires-python = ">=3.11"

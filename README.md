@@ -10,6 +10,7 @@
 [![Uniswap V3](https://img.shields.io/badge/DEX-Uniswap%20V3-pink)](https://app.uniswap.org)
 [![MCP](https://img.shields.io/badge/Protocol-MCP%2017%20Tools-cyan)](https://axon-onld.onrender.com/mcp/tools)
 [![x402](https://img.shields.io/badge/x402-Payment%20Gate-yellow)](https://axon-onld.onrender.com/api/x402/pricing)
+[![Plugin Store](https://img.shields.io/badge/Onchain%20OS-Plugin%20Store%20PR%20%2393-green)](https://github.com/okx/plugin-store/pull/93)
 
 ---
 
@@ -30,7 +31,7 @@ AXON exposes **17 production-ready MCP tools** any Claude, GPT, or open-source a
 - 🤖 Autonomous background agent — scans X Layer every 60s, logs gas alerts and yield signals
 - 💰 **x402 micro-payment gate** — premium tools require OKB payment on X Layer
 
-**Arena:** Skills Arena | **Bonus:** Deployed on X Layer (Chain ID 196)
+**Arena:** X Layer Arena + Skills Arena | **Plugin Store:** [axon-xlayer-intelligence PR #93](https://github.com/okx/plugin-store/pull/93)
 
 ---
 
@@ -291,6 +292,25 @@ Test suite covers: `TestHealth` (3) · `TestMCPTools` (4) · `TestFreeMCPCalls` 
 
 ---
 
+## Onchain OS Plugin Store Skill
+
+AXON is published as a reusable **Onchain OS skill** that any AI agent (Claude, GPT, open-source) can install in one command:
+
+```bash
+npx skills add okx/plugin-store --skill axon-xlayer-intelligence
+```
+
+The skill (`skill/axon-xlayer-intelligence/`) exposes all 17 MCP tools as agent-native commands with:
+- Full `curl` examples for every tool
+- x402 payment flow documentation step-by-step
+- Error handling table and skill routing guidance
+- Natural language chat endpoint integration
+
+**Plugin Store PR:** https://github.com/okx/plugin-store/pull/93  
+**Skill source:** [`skill/axon-xlayer-intelligence/`](./skill/axon-xlayer-intelligence/)
+
+---
+
 ## Deployment
 
 | Service | URL |
@@ -302,7 +322,8 @@ Test suite covers: `TestHealth` (3) · `TestMCPTools` (4) · `TestFreeMCPCalls` 
 | **Chat API** | https://axon-onld.onrender.com/api/chat |
 | **Agent Activity** | https://axon-onld.onrender.com/api/agent/activity |
 | **x402 Pricing** | https://axon-onld.onrender.com/api/x402/pricing |
-| **x402 Verify (NEW)** | https://axon-onld.onrender.com/api/x402/verify |
+| **x402 Verify** | https://axon-onld.onrender.com/api/x402/verify |
+| **Plugin Store Skill** | https://github.com/okx/plugin-store/pull/93 |
 | **GitHub** | https://github.com/MUTHUKUMARAN-K-1/axon |
 
 ---
@@ -335,7 +356,7 @@ As X Layer's ecosystem grows, every new protocol, token, and DeFi primitive beco
 
 | Criterion (25% each) | AXON's Implementation |
 |---|---|
-| **Onchain OS / Uniswap integration & innovation** | 6 Onchain OS modules + Uniswap V3 subgraph + OKX DEX aggregator. All 17 MCP tools are production-tested live endpoints. Unique: x402 payment gate using OKB on X Layer as the monetization layer. |
+| **Onchain OS / Uniswap integration & innovation** | 6 Onchain OS modules + Uniswap V3 subgraph + OKX DEX aggregator. All 17 MCP tools are production-tested live endpoints. x402 payment gate uses OKB on X Layer. **Published to Onchain OS Plugin Store** ([PR #93](https://github.com/okx/plugin-store/pull/93)) — installable via `npx skills add okx/plugin-store --skill axon-xlayer-intelligence`. |
 | **X Layer ecosystem integration** | 100% focused on X Layer (Chain ID 196). Gas monitoring, block analytics, OKB pricing, pool liquidity, autonomous agent loop, and x402 payments are all X Layer-native. |
 | **AI interactive experience** | Natural language "Ask AXON" chat, real-time Agent Terminal (live MCP execution), autonomous activity feed, LLM-generated portfolio insights via Groq LLaMA 3.3 70B. |
 | **Product completeness** | 7-page React frontend, FastAPI backend, WebSocket agent terminal, REST + MCP API, Chat API, x402 gate, Swagger docs, deployed to Vercel + Render. Works end-to-end with zero setup. |
@@ -348,6 +369,7 @@ As X Layer's ecosystem grows, every new protocol, token, and DeFi primitive beco
 | **Best MCP integration** | 17 MCP tools covering all aspects of X Layer: portfolio, market, DEX, swap, AI analysis — plus chat interface for natural language access |
 | **Best economy loop** | Autonomous agent monitors yield → surfaces opportunity → user swaps via OKX DEX aggregator → earns yield → pays x402 for more analysis |
 | **Best data analyst** | Onchain OS data → deterministic risk scoring + LLM narrative + 7-day Uniswap OHLC + yield APY estimation |
+| **Most innovative (Skills Arena)** | First X Layer-native Onchain OS Plugin Store skill — wraps 17 live MCP tools into an installable one-command skill. [PR #93](https://github.com/okx/plugin-store/pull/93) |
 
 ---
 

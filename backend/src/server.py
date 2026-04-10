@@ -128,10 +128,10 @@ async def get_agent_activity(limit: int = 20):
     }
 
 
-# ─── x402 Info Endpoint ──────────────────────────────────────────────────────
+# ─── x402 Info + Verify Endpoints ────────────────────────────────────────────
 @app.get("/api/x402/pricing", tags=["x402"])
 async def x402_pricing():
-    """Returns x402 payment requirements for premium AXON tools."""
+    """Returns x402 payment requirements for all premium AXON tools."""
     from .features import PREMIUM_TOOLS, AGENT_WALLET
     return {
         "success": True,
@@ -139,14 +139,58 @@ async def x402_pricing():
         "payment_asset": "OKB",
         "payment_network": "X Layer Mainnet (Chain ID 196)",
         "payment_address": AGENT_WALLET,
+        "verification": "on-chain via OKLink API + RPC fallback",
+        "replay_protection": True,
         "free_tools": ["get_gas_price", "get_block_info", "get_market_overview", "get_uniswap_top_pools"],
         "premium_tools": PREMIUM_TOOLS,
         "how_to_pay": {
-            "step1": "Send OKB to payment_address on X Layer",
-            "step2": "Get transaction hash",
-            "step3": "Encode as base64 and include in X-PAYMENT header",
-            "step4": "Call /mcp/call with X-PAYMENT header",
+            "step1": f"Send OKB to {AGENT_WALLET} on X Layer (Chain ID 196)",
+            "step2": "Copy the tx hash (0x...)",
+            "step3": "Include in X-PAYMENT header: X-PAYMENT: 0xYourTxHash",
+            "step4": "POST /mcp/call — AXON verifies tx on OKLink before executing",
+        },
+        "header_formats": [
+            "X-PAYMENT: 0x<64-hex-chars>  (raw tx hash)",
+            "X-PAYMENT: <base64('0x...')>  (base64 encoded)",
+            "X-PAYMENT: <base64(JSON{tx:'0x...'})>  (base64 JSON)",
+        ],
+    }
+
+
+from pydantic import BaseModel as _VerifyBM
+class VerifyPaymentRequest(_VerifyBM):
+    tx_hash: str
+    tool_name: str = "analyze_wallet"
+
+@app.post("/api/x402/verify", tags=["x402"])
+async def x402_verify(req: VerifyPaymentRequest):
+    """
+    Pre-check: verify an OKB payment tx on X Layer before calling a premium tool.
+    Use this to confirm your payment will be accepted before submitting the MCP call.
+    """
+    from .features import PREMIUM_TOOLS, AGENT_WALLET
+    from .tools.xlayer import verify_tx_on_xlayer
+
+    if req.tool_name not in PREMIUM_TOOLS:
+        return {
+            "valid": True,
+            "message": f"{req.tool_name} is a free tool — no payment needed",
         }
+
+    required_okb = PREMIUM_TOOLS[req.tool_name]["price_okb"]
+    result = await verify_tx_on_xlayer(
+        tx_hash=req.tx_hash,
+        expected_recipient=AGENT_WALLET,
+        min_amount_okb=required_okb,
+    )
+    return {
+        "success": True,
+        "valid": result["valid"],
+        "reason": result.get("reason", ""),
+        "verification": result,
+        "tool": req.tool_name,
+        "required_okb": required_okb,
+        "payment_address": AGENT_WALLET,
     }
 
 
@@ -166,29 +210,36 @@ async def call_tool(
 ):
     """
     MCP: Call a specific tool by name with arguments.
-    Premium tools require x402 payment header (X-PAYMENT).
-    Returns 402 with payment info if not paid.
+    Premium tools require x402 payment (X-PAYMENT header = on-chain tx hash).
+    AXON queries OKLink to confirm the tx on X Layer before executing.
+    Returns 402 with full payment info if not paid or payment invalid.
     """
-    # x402 gate for premium tools
     payment_info = get_x402_payment_info(req.tool_name)
-    if payment_info and not verify_x402_payment(x_payment or "", req.tool_name):
-        return JSONResponse(
-            status_code=402,
-            content={
-                "error": "Payment Required",
-                "x402": payment_info,
-                "message": f"Tool '{req.tool_name}' requires micro-payment. "
-                           f"Send X-PAYMENT header with OKB tx proof.",
-                "free_alternative": "Use /api/balance/{address} for basic wallet info.",
-            },
-            headers={
-                "X-Payment-Required": "true",
-                "X-Payment-Address": payment_info["accepts"][0]["payTo"],
-                "X-Payment-Asset": "OKB",
-                "X-Payment-Network": "xlayer-mainnet",
-                "X-Payment-Amount": payment_info["accepts"][0]["maxAmountRequired"],
-            }
-        )
+    if payment_info:
+        paid, reason, verification = await verify_x402_payment(x_payment or "", req.tool_name)
+        if not paid:
+            return JSONResponse(
+                status_code=402,
+                content={
+                    "error": "Payment Required",
+                    "rejection_reason": reason,
+                    "x402": payment_info,
+                    "verification": verification,
+                    "message": (
+                        f"Tool '{req.tool_name}' requires OKB payment on X Layer. "
+                        f"Rejection: {reason}"
+                    ),
+                    "free_alternative": "GET /api/balance/{address} for basic wallet info.",
+                },
+                headers={
+                    "X-Payment-Required": "true",
+                    "X-Payment-Address": payment_info["accepts"][0]["payTo"],
+                    "X-Payment-Asset": "OKB",
+                    "X-Payment-Network": "xlayer-mainnet",
+                    "X-Payment-Amount": payment_info["accepts"][0]["maxAmountRequired"],
+                    "X-Payment-Rejection": reason[:120] if reason else "",
+                }
+            )
 
     logger.info(f"MCP call: {req.tool_name} args={list(req.arguments.keys())}")
     result = await dispatch_tool(req.tool_name, req.arguments)

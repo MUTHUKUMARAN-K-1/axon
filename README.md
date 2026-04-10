@@ -171,27 +171,41 @@ AXON runs a background agent every 60 seconds that:
 Endpoint: `GET /api/agent/activity`  
 Frontend: `/activity` page — live auto-refreshing event feed
 
-### 💰 x402 Micro-Payment Gate
-Premium tools require OKB payment on X Layer before execution.
+### 💰 x402 Micro-Payment Gate (On-Chain Verified)
+Premium tools require OKB payment on X Layer. AXON queries **OKLink** to confirm
+the tx is real before executing — replay protection prevents reusing the same payment twice.
 
 ```http
-# Without payment — returns 402
+# Step 1 — Pre-verify your payment (optional but recommended)
+POST https://axon-onld.onrender.com/api/x402/verify
+{ "tx_hash": "0xYourTxHash", "tool_name": "analyze_wallet" }
+→ { "valid": true, "verification": { "source": "oklink", "value_okb": 0.001, ... } }
+
+# Step 2 — Call the premium tool with X-PAYMENT header
 POST /mcp/call
+X-PAYMENT: 0xYourTxHashHere
 { "tool_name": "analyze_wallet", "arguments": {"address": "0x..."} }
 
+# Without payment → 402 with full rejection detail
 → 402 Payment Required
   X-Payment-Address: 0xDb82c0d91E057E05600C8F8dc836bEb41da6df14
   X-Payment-Amount: 0.001
   X-Payment-Asset: OKB
   X-Payment-Network: xlayer-mainnet
-
-# With payment — executes and returns result
-POST /mcp/call
-X-PAYMENT: <base64-encoded-tx-hash>
-{ "tool_name": "analyze_wallet", "arguments": {"address": "0x..."} }
+  X-Payment-Rejection: Cannot extract tx hash from X-PAYMENT header
+  body: { error, rejection_reason, x402: {...}, verification: {...} }
 ```
 
-Pricing info: `GET /api/x402/pricing`
+**Verification pipeline:**
+1. Extract tx hash from `X-PAYMENT` header (raw / base64 / JSON-base64 all accepted)
+2. Check replay protection cache — each tx can only be used **once**
+3. Query **OKLink** `GET /transaction/transaction-fills?txid=...&chainShortName=XLAYER`
+4. Fallback to X Layer RPC `eth_getTransactionReceipt` if OKLink is unavailable
+5. Validate: `status=success` AND `to=AXON_WALLET` AND `value >= required_okb`
+6. Mark tx as used — 24h replay protection window
+
+Pricing info: `GET /api/x402/pricing`  
+Pre-verify tx: `POST /api/x402/verify`
 
 ---
 
@@ -206,7 +220,7 @@ GET https://axon-onld.onrender.com/mcp/tools
 POST https://axon-onld.onrender.com/mcp/call
 { "tool_name": "get_market_overview", "arguments": {} }
 
-# Chat interface
+# Chat interface — plain English query
 POST https://axon-onld.onrender.com/api/chat
 { "question": "What's the best yield on X Layer?" }
 
@@ -215,6 +229,10 @@ GET https://axon-onld.onrender.com/api/agent/activity
 
 # x402 pricing
 GET https://axon-onld.onrender.com/api/x402/pricing
+
+# Pre-verify your OKB payment before calling a premium tool
+POST https://axon-onld.onrender.com/api/x402/verify
+{ "tx_hash": "0x...", "tool_name": "analyze_wallet" }
 
 # Real-time WebSocket
 WS wss://axon-onld.onrender.com/ws/agent
@@ -241,7 +259,7 @@ Agent: Delivers natural language answer to user
 ```bash
 # Backend
 cd backend
-cp .env.example .env   # add OKX + Groq API keys
+cp .env.example .env   # add OKX + Groq + OKLink API keys
 pip install -r requirements.txt
 uvicorn src.server:app --reload --port 3000
 
@@ -251,6 +269,25 @@ npm install
 echo "VITE_AXON_API_URL=http://localhost:3000" > .env
 npm run dev
 ```
+
+### Running Tests
+```bash
+cd backend
+
+# Run all integration tests against live deployment
+pytest tests/ -v
+
+# Run against local instance
+AXON_TEST_URL=http://localhost:3000 pytest tests/ -v
+
+# Run only x402 payment tests
+pytest tests/ -v -k "X402"
+
+# Run only fast tests (no LLM calls)
+pytest tests/ -v -k "not chat"
+```
+
+Test suite covers: `TestHealth` (3) · `TestMCPTools` (4) · `TestFreeMCPCalls` (3) · `TestX402` (4) · `TestAgentActivity` (2) · `TestChatAPI` (2) = **18 tests total**
 
 ---
 
@@ -265,6 +302,7 @@ npm run dev
 | **Chat API** | https://axon-onld.onrender.com/api/chat |
 | **Agent Activity** | https://axon-onld.onrender.com/api/agent/activity |
 | **x402 Pricing** | https://axon-onld.onrender.com/api/x402/pricing |
+| **x402 Verify (NEW)** | https://axon-onld.onrender.com/api/x402/verify |
 | **GitHub** | https://github.com/MUTHUKUMARAN-K-1/axon |
 
 ---

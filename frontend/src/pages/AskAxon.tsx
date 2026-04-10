@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import {
   Brain, Send, Loader2, Zap, TrendingUp, Wallet,
   BarChart3, ArrowLeftRight, Sparkles, ChevronRight,
-  MessageSquare, Bot, User
+  MessageSquare, Bot, User, Lock, ExternalLink, Copy, CheckCheck
 } from 'lucide-react'
 
 const API = import.meta.env.VITE_AXON_API_URL || 'https://axon-onld.onrender.com'
@@ -14,6 +14,12 @@ interface Message {
   tool?: string
   loading?: boolean
   timestamp: Date
+  payment402?: {
+    payment_address: string
+    amount_okb: string
+    tool_name: string
+    rejection_reason?: string
+  }
 }
 
 const SUGGESTIONS = [
@@ -39,6 +45,59 @@ function ToolBadge({ tool }: { tool: string }) {
       <Sparkles size={10} />
       {tool}
     </span>
+  )
+}
+
+function PaymentCard({ p }: { p: NonNullable<Message['payment402']> }) {
+  const [copied, setCopied] = useState(false)
+  const copy = () => {
+    navigator.clipboard.writeText(p.payment_address)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+  return (
+    <div style={{
+      marginTop: 10,
+      background: 'linear-gradient(135deg, rgba(245,158,11,0.06), rgba(234,179,8,0.04))',
+      border: '1.5px solid rgba(245,158,11,0.3)',
+      borderRadius: 12, padding: '14px 16px',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+        <Lock size={14} color="#D97706" />
+        <span style={{ fontSize: 13, fontWeight: 700, color: '#92400E' }}>
+          Premium Tool — OKB Payment Required
+        </span>
+      </div>
+      {p.rejection_reason && (
+        <div style={{ fontSize: 12, color: '#B45309', marginBottom: 8, fontStyle: 'italic' }}>
+          ↳ {p.rejection_reason}
+        </div>
+      )}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
+        <div style={{ background: 'white', borderRadius: 8, padding: '8px 10px', border: '1px solid rgba(245,158,11,0.2)' }}>
+          <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>Tool</div>
+          <div style={{ fontSize: 12, fontFamily: "'JetBrains Mono', monospace", color: 'var(--text-primary)' }}>{p.tool_name}</div>
+        </div>
+        <div style={{ background: 'white', borderRadius: 8, padding: '8px 10px', border: '1px solid rgba(245,158,11,0.2)' }}>
+          <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>Amount</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#D97706' }}>{p.amount_okb} OKB</div>
+        </div>
+      </div>
+      <div style={{ background: 'white', borderRadius: 8, padding: '8px 10px', border: '1px solid rgba(245,158,11,0.2)', marginBottom: 10 }}>
+        <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>Pay to (X Layer)</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', monospace", color: 'var(--text-primary)', flex: 1, wordBreak: 'break-all' }}>{p.payment_address}</div>
+          <button onClick={copy} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: '#D97706', flexShrink: 0 }}>
+            {copied ? <CheckCheck size={14} color="#10B981" /> : <Copy size={14} />}
+          </button>
+        </div>
+      </div>
+      <div style={{ fontSize: 11, color: '#92400E', lineHeight: 1.6 }}>
+        <b>How to pay:</b> Send {p.amount_okb} OKB to the address above on X Layer (Chain 196).
+        Copy the tx hash, include it as <code style={{ background: 'rgba(245,158,11,0.1)', padding: '1px 4px', borderRadius: 3 }}>X-PAYMENT: 0xYourTxHash</code> header, then retry.
+        Use <a href={`${API}/api/x402/verify`} target="_blank" rel="noreferrer" style={{ color: '#D97706' }}>POST /api/x402/verify <ExternalLink size={10} style={{display:'inline'}} /></a> to pre-check.
+      </div>
+    </div>
   )
 }
 
@@ -88,9 +147,10 @@ function MessageBubble({ msg }: { msg: Message }) {
             </div>
           ) : (
             msg.content
-              .replace(/\*\*(.*?)\*\*/g, '$1')  // strip markdown bold for plain display
+              .replace(/\*\*(.*?)\*\*/g, '$1')
           )}
         </div>
+        {msg.payment402 && <PaymentCard p={msg.payment402} />}
         <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4,
           textAlign: isUser ? 'right' : 'left' }}>
           {msg.timestamp.toLocaleTimeString()}

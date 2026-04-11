@@ -27,6 +27,7 @@ from .features import (
     start_agent_loop, ACTIVITY_LOG,
     handle_chat, get_x402_payment_info, verify_x402_payment,
 )
+from .agents.security_agent import scan_token_security, get_smart_money_signals, batch_security_scan
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 logger = logging.getLogger("axon.server")
@@ -375,6 +376,39 @@ async def xlayer_chain_info():
     """X Layer chain info from Onchain OS."""
     from .tools.onchain_os import get_xlayer_stats
     return await get_xlayer_stats()
+
+
+# ─── Security Intelligence APIs ────────────────────────────────────────────────
+
+@app.get("/api/token/{token_address}/security", tags=["Security"])
+async def token_security_scan(token_address: str):
+    """
+    Full 5-stage security analysis for any X Layer token.
+    Returns risk score (0-100), honeypot flags, holder concentration,
+    liquidity safety, contract verification, and activity anomalies.
+    """
+    return await scan_token_security(token_address)
+
+
+@app.get("/api/smart-money/signals", tags=["Security"])
+async def smart_money_signals(limit: int = 10):
+    """
+    Identify tokens with smart money accumulation signals on X Layer.
+    Uses volume/TVL velocity cross-analysis on Uniswap V3 pools.
+    """
+    return await get_smart_money_signals(limit)
+
+
+class BatchScanRequest(_BM):
+    token_addresses: list[str]
+
+@app.post("/api/security/batch", tags=["Security"])
+async def batch_token_security(req: BatchScanRequest):
+    """
+    Batch security scan for up to 10 tokens in parallel.
+    Returns risk-sorted leaderboard — highest risk first.
+    """
+    return await batch_security_scan(req.token_addresses)
 
 
 # ─── WebSocket: Live Agent Terminal ───────────────────────────────────────────

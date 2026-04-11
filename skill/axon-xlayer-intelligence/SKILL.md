@@ -1,6 +1,6 @@
 ---
 name: axon-xlayer-intelligence
-description: "X Layer DeFi intelligence skill — query gas, blocks, Uniswap V3 pools, wallet portfolios, swap quotes, yield opportunities, and arbitrage signals on X Layer (Chain ID 196) via 17 MCP tools"
+description: "X Layer DeFi intelligence skill — query gas, blocks, Uniswap V3 pools, wallet portfolios, swap quotes, yield opportunities, arbitrage signals, and 6-source token security scanning on X Layer (Chain ID 196) via 19 MCP tools"
 version: "1.0.0"
 author: "MUTHUKUMARAN K"
 tags:
@@ -19,7 +19,7 @@ tags:
 
 ## Overview
 
-AXON gives AI agents real-time onchain intelligence for **X Layer (Chain ID 196)** — OKX's zkEVM Layer 2 powered by OKB. It exposes 17 production-ready MCP tools covering gas analytics, block monitoring, Uniswap V3 pool data, wallet portfolio analysis (with AI risk scoring), DEX swap routing via OKX aggregator, yield farming discovery, and arbitrage signals. A natural language `/api/chat` endpoint lets agents skip tool selection and ask questions in plain English. Premium tools are gated behind an **x402 micro-payment** (OKB on X Layer) that is verified on-chain before execution.
+AXON gives AI agents real-time onchain intelligence for **X Layer (Chain ID 196)** — OKX's zkEVM Layer 2 powered by OKB. It exposes 19 production-ready MCP tools covering gas analytics, block monitoring, Uniswap V3 pool data, wallet portfolio analysis (with AI risk scoring), DEX swap routing via OKX aggregator, yield farming discovery, arbitrage signals, and a **6-source token security scanner** with smart money velocity signals. A natural language `/api/chat` endpoint lets agents skip tool selection and ask questions in plain English. Premium tools are gated behind an **x402 micro-payment** (OKB on X Layer) that is verified on-chain before execution.
 
 **Live API:** `https://axon-onld.onrender.com`  
 **Live Dashboard:** `https://axon-six-amber.vercel.app`  
@@ -41,7 +41,7 @@ Before using this skill, verify:
    ```bash
    curl https://axon-onld.onrender.com/api/x402/pricing
    ```
-3. No API key is required for free tools. All 17 tools are publicly callable.
+3. No API key is required for free tools. All 19 tools are publicly callable.
 
 > **Note:** The Render backend may cold-start in ~30s if unused. Retry once if you get a timeout.
 
@@ -270,6 +270,111 @@ curl -X POST https://axon-onld.onrender.com/mcp/call \
 
 ---
 
+### scan_token_security — 6-Source Token Security Scanner
+
+```bash
+curl -X POST https://axon-onld.onrender.com/mcp/call \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tool_name": "scan_token_security",
+    "arguments": {"token_address": "0x1e4a5963abfd975d8c9021ce480b42188849d41d"}
+  }'
+```
+
+**When to use:** When the user asks "is this token safe?", "is it a honeypot?", "should I buy X token?", "is this a rug pull?", or any security/scam/risk question about a token address.  
+**Output:** Composite risk score (0–100, higher = riskier), verdict (SAFE / CAUTION / RISKY / DANGEROUS), 6 independent source scores, honeypot flag, holder concentration, top holder percentage, pair age in days, liquidity USD, volume/TVL ratio, and a list of all risk flags raised.  
+**Parameters:**
+- `token_address` (string, required) — ERC-20 contract address on X Layer
+
+**Risk score tiers:**
+
+| Score | Verdict | Meaning |
+|-------|---------|---------|
+| 0–19 | SAFE | Low risk, passes all checks |
+| 20–44 | CAUTION | Minor flags — review before investing |
+| 45–64 | RISKY | Multiple red flags — high caution |
+| 65–100 | DANGEROUS | Likely honeypot or rug — do not buy |
+
+**6 sources queried in parallel:**
+1. OKX DEX Security API (`/dex/security/token`)
+2. OKX Onchain OS Advanced (`/wallet/token/security-info`)
+3. DexScreener (pair age, volume, liquidity, FDV)
+4. DefiLlama Yields (APY sanity check)
+5. Uniswap V3 subgraph (holder concentration, top holder %)
+6. OKLink (on-chain verification)
+
+**Example response:**
+```json
+{
+  "result": {
+    "token_address": "0x1e4a5963...",
+    "risk_score": 12,
+    "verdict": "SAFE",
+    "honeypot": false,
+    "holder_count": 4821,
+    "top_holder_pct": 8.3,
+    "pair_age_days": 142,
+    "liquidity_usd": 2100000,
+    "volume_tvl_ratio": 0.18,
+    "flags": [],
+    "sources": {
+      "okx_dex": 10,
+      "okx_onchain": 8,
+      "dexscreener": 15,
+      "defillama": 5,
+      "uniswap_v3": 12,
+      "oklink": 10
+    }
+  }
+}
+```
+
+---
+
+### get_smart_money_signals — Smart Money Velocity Signals
+
+```bash
+curl -X POST https://axon-onld.onrender.com/mcp/call \
+  -H "Content-Type: application/json" \
+  -d '{"tool_name": "get_smart_money_signals", "arguments": {"limit": 10}}'
+```
+
+**When to use:** When the user asks "what are whales buying?", "any hot tokens?", "smart money signals?", "what's being accumulated?", or wants to find high-conviction opportunities on X Layer.  
+**Output:** Ranked list of Uniswap V3 pools with elevated volume/TVL ratios indicating potential smart money accumulation. Includes signal strength (STRONG / MODERATE), pair symbol, TVL, 24h volume, volume/TVL ratio, and fee tier.  
+**Parameters:**
+- `limit` (int, optional) — max signals to return (default 10, max 50)
+
+**Signal strength thresholds:**
+
+| Volume/TVL Ratio | Signal | Interpretation |
+|-----------------|--------|---------------|
+| ≥ 0.5 | STRONG | Very high activity relative to liquidity — smart money accumulation likely |
+| 0.2–0.49 | MODERATE | Elevated activity — worth watching |
+| < 0.2 | — | Normal activity, not returned |
+
+**Example response:**
+```json
+{
+  "result": {
+    "signals": [
+      {
+        "pool": "WBTC/USDC",
+        "signal": "STRONG",
+        "volume_tvl_ratio": 0.74,
+        "tvl_usd": 1200000,
+        "volume_24h_usd": 888000,
+        "fee_tier": "0.05%",
+        "pool_address": "0xabc..."
+      }
+    ],
+    "scanned_pools": 47,
+    "timestamp": "2026-04-11T12:00:00Z"
+  }
+}
+```
+
+---
+
 ## Natural Language Chat (Alternative to Direct Tool Calls)
 
 Instead of selecting tools manually, agents can ask in plain English:
@@ -290,7 +395,7 @@ curl -X POST https://axon-onld.onrender.com/api/chat \
 }
 ```
 
-AXON uses Groq LLaMA 3.3 70B to route intent to the correct tool and format the response as a natural language answer. Supported intents: gas, blocks, yield, pools, arbitrage, wallet analysis, swap quotes, market overview.
+AXON uses Groq LLaMA 3.3 70B to route intent to the correct tool and format the response as a natural language answer. Supported intents: gas, blocks, yield, pools, arbitrage, wallet analysis, swap quotes, market overview, **token security scanning**, **smart money signals**.
 
 ---
 
@@ -363,6 +468,26 @@ User asks: *"Is now a good time to do a large transaction?"*
 2. Call `get_block_info` — check `gas_utilization_pct`
 3. If gas < 0.05 gwei AND utilization < 50%: "Yes, excellent conditions"
 4. Otherwise: "Gas is elevated at X gwei, consider waiting"
+
+### Example 5: Token Safety Check Before Buying
+
+User asks: *"Is 0x1e4a5963... safe to buy?"*
+
+1. Call `scan_token_security` with `{"token_address": "0x1e4a5963..."}`
+2. Check `verdict` field — SAFE / CAUTION / RISKY / DANGEROUS
+3. Check `honeypot` flag — if true, abort immediately
+4. Check `flags` list — surface any specific risks to the user
+5. Check `pair_age_days` and `liquidity_usd` — new pairs with low liquidity are higher risk
+6. Return composite risk score and verdict with plain-English explanation
+
+### Example 6: Finding Smart Money Accumulation
+
+User asks: *"What are whales buying on X Layer right now?"*
+
+1. Call `get_smart_money_signals` with `{"limit": 5}`
+2. Filter to `signal: "STRONG"` entries (volume/TVL ≥ 0.5)
+3. Present pool names, volume/TVL ratios, and TVL
+4. Optionally cross-reference with `scan_token_security` for safety check on flagged pools
 
 ---
 

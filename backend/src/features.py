@@ -44,6 +44,7 @@ async def start_agent_loop():
 
     from .tools.xlayer import get_gas_price, get_block_info
     from .agents.market_agent import get_yield_opportunities
+    from .agents.security_agent import get_smart_money_signals
 
     cycle = 0
     while True:
@@ -51,34 +52,43 @@ async def start_agent_loop():
             cycle += 1
             _log_activity("info", f"Agent cycle #{cycle} — scanning X Layer...", {"cycle": cycle})
 
-            gas, block, yields = await asyncio.gather(
+            gas, block, yields, signals = await asyncio.gather(
                 get_gas_price(),
                 get_block_info("latest"),
                 get_yield_opportunities(min_apy=8.0),
-                return_exceptions=False,
+                get_smart_money_signals(limit=5),
+                return_exceptions=True,
             )
 
-            if gas.get("success"):
+            if isinstance(gas, dict) and gas.get("success"):
                 gwei = gas.get("gas_price_gwei", 0)
                 if gwei < 0.05:
-                    _log_activity("alert", f"⚡ Low gas: {gwei} gwei — ideal execution window", {"gas_gwei": gwei})
+                    _log_activity("alert", f"Low gas: {gwei} gwei — ideal execution window", {"gas_gwei": gwei})
                 else:
                     _log_activity("gas", f"Gas price: {gwei} gwei", {"gas_gwei": gwei})
 
-            if block.get("success"):
+            if isinstance(block, dict) and block.get("success"):
                 blk = block.get("block_number", 0)
                 util = block.get("gas_utilization_pct", 0)
                 _log_activity("info", f"Block #{blk:,} — {util}% gas utilization",
                               {"block": blk, "utilization": util})
 
-            opps = yields.get("opportunities", [])
-            if opps:
-                best = opps[0]
-                _log_activity("yield",
-                    f"🌾 Yield: {best.get('pair','?')} @ {best.get('estimated_fee_apy_pct','?')}% APY "
-                    f"(TVL ${best.get('tvl_usd',0):,.0f})", best)
-            else:
-                _log_activity("info", "No high-yield opportunities above 8% APY this cycle", {})
+            if isinstance(yields, dict):
+                opps = yields.get("opportunities", [])
+                if opps:
+                    best = opps[0]
+                    _log_activity("yield",
+                        f"Yield: {best.get('pair','?')} @ {best.get('estimated_fee_apy_pct','?')}% APY "
+                        f"(TVL ${best.get('tvl_usd',0):,.0f})", best)
+                else:
+                    _log_activity("info", "No high-yield opportunities above 8% APY this cycle", {})
+
+            if isinstance(signals, dict) and signals.get("signals_found", 0) > 0:
+                top = signals["signals"][0]
+                _log_activity("security",
+                    f"Smart money signal: {top.get('pair','?')} — {top.get('signal_label','?')} "
+                    f"velocity {top.get('velocity_ratio','?')}x",
+                    top)
 
         except Exception as e:
             _log_activity("alert", f"Agent loop error: {str(e)[:80]}", {})
@@ -99,6 +109,8 @@ INTENT_PATTERNS = [
     (["arbitrage", "arb", "price difference", "spread"], "find_arbitrage_opportunities",
      lambda q: {"token_address": "0x1e4a5963abfd975d8c9021ce480b42188849d41d", "amount_usd": 1000}),
     (["chain", "x layer stats", "network info", "chain info"], "get_xlayer_stats", lambda _: {}),
+    (["smart money", "whale", "signal", "accumulation", "hot token"], "get_smart_money_signals",
+     lambda q: {"limit": 10}),
 ]
 
 
@@ -108,12 +120,16 @@ def _detect_intent(question: str):
     addr = re.search(r'0x[a-fA-F0-9]{40}', question)
     if addr:
         address = addr.group(0)
+        if any(w in q for w in ["scan", "safe", "honeypot", "rug", "scam", "security", "risky", "dangerous"]):
+            return "scan_token_security", {"token_address": address}
         if any(w in q for w in ["analyze", "analysis", "portfolio", "wallet", "risk", "holding"]):
             return "analyze_wallet", {"address": address, "include_ai_insights": True}
         if any(w in q for w in ["balance", "okb", "how much"]):
             return "get_native_balance", {"address": address}
         if any(w in q for w in ["transaction", "tx", "history", "activity"]):
             return "get_transaction_history", {"address": address, "limit": 10}
+        if any(w in q for w in ["price", "token", "analytics"]):
+            return "get_uniswap_token_analytics", {"token_address": address}
         return "analyze_wallet", {"address": address, "include_ai_insights": True}
 
     for keywords, tool, arg_fn in INTENT_PATTERNS:

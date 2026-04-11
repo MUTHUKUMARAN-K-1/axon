@@ -2,7 +2,7 @@ import React from 'react'
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { Brain, LayoutDashboard, Wallet, BarChart3, ArrowLeftRight, Terminal,
-  Zap, Network, ExternalLink, MessageSquare, Activity
+  Zap, MessageSquare, Activity, Shield
 } from 'lucide-react'
 import Dashboard from './pages/Dashboard'
 import Portfolio from './pages/Portfolio'
@@ -11,6 +11,7 @@ import Swap from './pages/Swap'
 import AgentTerminal from './pages/AgentTerminal'
 import AskAxon from './pages/AskAxon'
 import AgentActivity from './pages/AgentActivity'
+import TokenScreener from './pages/TokenScreener'
 
 const NAV_CORE = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -23,6 +24,7 @@ const NAV_CORE = [
 const NAV_AI = [
   { to: '/ask', icon: MessageSquare, label: 'Ask AXON', badge: 'NEW' },
   { to: '/activity', icon: Activity, label: 'Agent Activity', badge: 'LIVE' },
+  { to: '/screener', icon: Shield, label: 'Token Screener', badge: 'HOT' },
 ]
 
 export default function App() {
@@ -125,10 +127,14 @@ export default function App() {
                     padding: '2px 6px', borderRadius: 99,
                     background: badge === 'NEW'
                       ? 'linear-gradient(135deg, #5B3CF5, #06C4D0)'
+                      : badge === 'HOT'
+                      ? 'linear-gradient(135deg, #EF4444, #F59E0B)'
                       : 'linear-gradient(135deg, #10B981, #06C4D0)',
                     color: 'white',
                     boxShadow: badge === 'NEW'
                       ? '0 2px 6px rgba(91,60,245,0.4)'
+                      : badge === 'HOT'
+                      ? '0 2px 6px rgba(239,68,68,0.4)'
                       : '0 2px 6px rgba(16,185,129,0.4)',
                   }}>
                     {badge}
@@ -174,6 +180,7 @@ export default function App() {
             <Route path="/agent" element={<AgentTerminal />} />
             <Route path="/ask" element={<AskAxon />} />
             <Route path="/activity" element={<AgentActivity />} />
+            <Route path="/screener" element={<TokenScreener />} />
           </Routes>
         </main>
       </div>

@@ -29,6 +29,7 @@ from .tools.xlayer import (
 )
 from .agents.portfolio_agent import analyze_wallet, compare_wallets
 from .agents.market_agent import get_market_overview, find_arbitrage_opportunities, get_yield_opportunities
+from .agents.security_agent import scan_token_security, get_smart_money_signals
 
 logger = logging.getLogger("axon.mcp")
 
@@ -213,6 +214,34 @@ MCP_TOOLS = [
             "required": ["token_address"],
         },
     },
+    {
+        "name": "scan_token_security",
+        "description": (
+            "5-stage token security analysis: honeypot detection, holder concentration, "
+            "liquidity safety, contract verification, and price anomalies. "
+            "Returns risk score 0-100 with actionable flags. AXON's signature security feature."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "token_address": {"type": "string", "description": "Token contract address to scan"},
+            },
+            "required": ["token_address"],
+        },
+    },
+    {
+        "name": "get_smart_money_signals",
+        "description": (
+            "Identify tokens with smart money accumulation signals on X Layer. "
+            "Uses volume/TVL velocity cross-analysis on all Uniswap V3 pools."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "limit": {"type": "integer", "default": 10, "description": "Max signals to return"},
+            },
+        },
+    },
 ]
 
 
@@ -253,6 +282,8 @@ async def dispatch_tool(tool_name: str, args: Dict[str, Any]) -> Any:
         "find_arbitrage_opportunities": lambda: find_arbitrage_opportunities(
             args["token_address"], args.get("amount_usd", 1000.0)
         ),
+        "scan_token_security": lambda: scan_token_security(args["token_address"]),
+        "get_smart_money_signals": lambda: get_smart_money_signals(args.get("limit", 10)),
     }
 
     handler = dispatch.get(tool_name)

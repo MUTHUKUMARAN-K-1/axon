@@ -1,8 +1,7 @@
-import React from 'react'
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { Brain, LayoutDashboard, Wallet, BarChart3, ArrowLeftRight, Terminal,
-  Zap, MessageSquare, Activity, Shield
+  Zap, MessageSquare, Activity, Shield, Search, Sprout
 } from 'lucide-react'
 import Dashboard from './pages/Dashboard'
 import Portfolio from './pages/Portfolio'
@@ -12,6 +11,9 @@ import AgentTerminal from './pages/AgentTerminal'
 import AskAxon from './pages/AskAxon'
 import AgentActivity from './pages/AgentActivity'
 import TokenScreener from './pages/TokenScreener'
+import Explorer from './pages/Explorer'
+import SecurityHub from './pages/SecurityHub'
+import DefiHub from './pages/DefiHub'
 
 const NAV_CORE = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -25,6 +27,9 @@ const NAV_AI = [
   { to: '/ask', icon: MessageSquare, label: 'Ask AXON', badge: 'NEW' },
   { to: '/activity', icon: Activity, label: 'Agent Activity', badge: 'LIVE' },
   { to: '/screener', icon: Shield, label: 'Token Screener', badge: 'HOT' },
+  { to: '/explorer', icon: Search, label: 'Explorer', badge: '' },
+  { to: '/security', icon: Shield, label: 'Security Hub', badge: '' },
+  { to: '/defi', icon: Sprout, label: 'DeFi Hub', badge: '' },
 ]
 
 export default function App() {
@@ -181,6 +186,9 @@ export default function App() {
             <Route path="/ask" element={<AskAxon />} />
             <Route path="/activity" element={<AgentActivity />} />
             <Route path="/screener" element={<TokenScreener />} />
+            <Route path="/explorer" element={<Explorer />} />
+            <Route path="/security" element={<SecurityHub />} />
+            <Route path="/defi" element={<DefiHub />} />
           </Routes>
         </main>
       </div>

@@ -476,6 +476,77 @@ async def cross_chain_quote(req: CrossChainQuoteRequest):
     )
 
 
+# ─── OKLink Explorer Endpoints ────────────────────────────────────────────────
+
+from .tools.oklink import (
+    get_address_info, get_block_list, get_block_detail, get_contract_info,
+)
+
+@app.get("/api/address/{address}/info", tags=["Explorer"])
+async def address_info(address: str):
+    """Address info via OKLink: balance, tx count, entity tag, first/last TX."""
+    return await get_address_info(address)
+
+@app.get("/api/blocks/latest", tags=["Explorer"])
+async def latest_blocks(limit: int = 10):
+    """Most recent blocks on X Layer via OKLink."""
+    return await get_block_list(limit)
+
+@app.get("/api/block/{block_number}", tags=["Explorer"])
+async def block_detail(block_number: str):
+    """Full details for a specific block number on X Layer via OKLink."""
+    return await get_block_detail(block_number)
+
+@app.get("/api/contract/{address}/info", tags=["Explorer"])
+async def contract_info(address: str):
+    """Contract verification, creator, deploy TX via OKLink."""
+    return await get_contract_info(address)
+
+
+# ─── Security Hub Endpoints ───────────────────────────────────────────────────
+
+from .tools.onchain_os import check_address_security, check_url_safety
+
+@app.get("/api/address/{address}/security-check", tags=["Security"])
+async def address_security_check(address: str):
+    """OKX on-chain address risk check: blacklisted, phishing, contract risk."""
+    return await check_address_security(address)
+
+class UrlSafetyRequest(_BM):
+    url: str
+
+@app.post("/api/url/safety", tags=["Security"])
+async def url_safety_check(req: UrlSafetyRequest):
+    """OKX phishing/malicious URL safety check."""
+    return await check_url_safety(req.url)
+
+
+# ─── DeFi Hub Endpoints ───────────────────────────────────────────────────────
+
+from .tools.onchain_os import get_nft_holdings, get_yield_products
+from .tools.uniswap import get_uniswap_protocol_stats, get_pool_fees
+
+@app.get("/api/address/{address}/nft", tags=["DeFi"])
+async def nft_holdings(address: str):
+    """NFT holdings for a wallet on X Layer via OKX Onchain OS."""
+    return await get_nft_holdings(address)
+
+@app.get("/api/defi/yield-products", tags=["DeFi"])
+async def yield_products():
+    """Available yield/farming products on X Layer via OKX Onchain OS."""
+    return await get_yield_products()
+
+@app.get("/api/uniswap/stats", tags=["Uniswap"])
+async def uniswap_protocol_stats():
+    """Uniswap V3 protocol-level stats: total TVL, volume, fees on X Layer."""
+    return await get_uniswap_protocol_stats()
+
+@app.get("/api/uniswap/pool/{pool_address}/fees", tags=["Uniswap"])
+async def pool_fees(pool_address: str):
+    """Fee revenue and estimated APY for a specific Uniswap V3 pool."""
+    return await get_pool_fees(pool_address)
+
+
 # ─── WebSocket: Live Agent Terminal ───────────────────────────────────────────
 
 @app.websocket("/ws/agent")

@@ -189,6 +189,54 @@ async def get_onchain_verdict(token_address: str) -> Optional[dict]:
         return None
 
 
+CONFIDENCE_BOND_ADDRESS = os.getenv("CONFIDENCE_BOND_ADDRESS", "0xe164011de202eb0ebf5f01ee5d9851c801a9c675").strip()
+
+# lockBond(address) selector — keccak256("lockBond(address)")[:4]
+_LOCK_BOND_SELECTOR = bytes.fromhex("5adda9d2")
+
+# BOND_AMOUNT_WEI must match what was set in the constructor (0.001 OKB)
+_BOND_AMOUNT_WEI = 1_000_000_000_000_000
+
+
+async def lock_bond(token_address: str) -> Optional[str]:
+    """
+    Call lockBond(token) on AxonConfidenceBond, sending BOND_AMOUNT_WEI as msg.value.
+    Only called after a SAFE verdict (risk < 20) has been published to VerdictLedger.
+    Returns tx_hash or None. Fire-and-forget — never raises.
+    """
+    if not (CONFIDENCE_BOND_ADDRESS and ORACLE_PRIVATE_KEY):
+        return None
+    try:
+        from eth_account import Account
+
+        acct = Account.from_key(ORACLE_PRIVATE_KEY)
+        token_clean = token_address.lower().removeprefix("0x").zfill(64)
+        calldata = "0x" + _LOCK_BOND_SELECTOR.hex() + token_clean
+
+        nonce = await _get_nonce(acct.address)
+        gas_price = int(await _rpc("eth_gasPrice", []), 16)
+
+        tx = {
+            "nonce": nonce,
+            "to": CONFIDENCE_BOND_ADDRESS,
+            "data": calldata,
+            "gas": 120_000,
+            "gasPrice": gas_price,
+            "chainId": 196,
+            "value": _BOND_AMOUNT_WEI,
+        }
+        signed = acct.sign_transaction(tx)
+        tx_hash = await _rpc("eth_sendRawTransaction", ["0x" + signed.raw_transaction.hex()])
+        logger.info(f"ConfidenceBond: locked bond for {token_address[:10]}... tx={tx_hash[:18]}...")
+        return tx_hash
+    except ImportError:
+        logger.warning("eth-account not installed — skipping bond lock")
+        return None
+    except Exception as e:
+        logger.warning(f"ConfidenceBond lockBond failed (non-critical): {e}")
+        return None
+
+
 async def get_total_verdicts() -> int:
     """Returns scannedTokens.length from the contract."""
     if not CONTRACT_ADDRESS:

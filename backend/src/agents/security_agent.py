@@ -23,7 +23,12 @@ import httpx
 from ..tools.xlayer import get_oklink_address_summary
 from ..tools.uniswap import get_uniswap_token_analytics, get_uniswap_top_pools
 from ..tools.onchain_os import get_token_price, _get_okx_headers
-from .verdict_ledger import publish_verdict as _publish_verdict, CONTRACT_ADDRESS as _LEDGER_ADDRESS
+from .verdict_ledger import (
+    publish_verdict as _publish_verdict,
+    lock_bond as _lock_bond,
+    CONTRACT_ADDRESS as _LEDGER_ADDRESS,
+    CONFIDENCE_BOND_ADDRESS as _BOND_ADDRESS,
+)
 
 logger = logging.getLogger("axon.agents.security")
 
@@ -549,21 +554,28 @@ async def scan_token_security(token_address: str) -> dict:
 
     # ── Fire-and-forget: publish verdict to AxonVerdictLedger on X Layer ──────
     # Non-blocking — scan always returns even if on-chain publish fails.
-    try:
-        asyncio.create_task(
-            _publish_verdict(
-                token_address=token_address,
-                risk_score=total_score,
-                flag_count=len(risks),
-                full_report={
-                    "token": token_address,
-                    "risk_score": total_score,
-                    "risk_label": _risk_label(total_score),
-                    "flags": risks,
-                    "scoring": result.get("scoring", {}),
-                },
-            )
+    # If SAFE (risk < 20), also lock a ConfidenceBond after verdict is published.
+    async def _publish_and_bond():
+        await _publish_verdict(
+            token_address=token_address,
+            risk_score=total_score,
+            flag_count=len(risks),
+            full_report={
+                "token": token_address,
+                "risk_score": total_score,
+                "risk_label": _risk_label(total_score),
+                "flags": risks,
+                "scoring": result.get("scoring", {}),
+            },
         )
+        if total_score < 20 and _BOND_ADDRESS:
+            # Wait ~15s for publishVerdict TX to confirm so lockBond()
+            # can read a SAFE verdict from VerdictLedger on-chain.
+            await asyncio.sleep(15)
+            await _lock_bond(token_address)
+
+    try:
+        asyncio.create_task(_publish_and_bond())
     except Exception as _e:
         logger.debug(f"VerdictLedger task schedule failed: {_e}")
 
@@ -574,6 +586,15 @@ async def scan_token_security(token_address: str) -> dict:
             "contract": _LEDGER_ADDRESS,
             "chain_id": 196,
             "explorer": f"https://www.oklink.com/xlayer/address/{_LEDGER_ADDRESS}",
+        }
+    if _BOND_ADDRESS and total_score < 20:
+        result["confidence_bond"] = {
+            "contract": _BOND_ADDRESS,
+            "chain_id": 196,
+            "bond_amount_okb": 0.001,
+            "challenge_window_days": 7,
+            "explorer": f"https://www.oklink.com/xlayer/address/{_BOND_ADDRESS}",
+            "note": "Bond locked on-chain — AXON puts skin in the game for this SAFE verdict",
         }
 
     return result

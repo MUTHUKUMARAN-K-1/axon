@@ -184,7 +184,7 @@ def main():
         "value": 0,
     }
     signed = acct.sign_transaction(tx)
-    tx_hash = rpc("eth_sendRawTransaction", [signed.raw_transaction.hex()], rpc_url)
+    tx_hash = rpc("eth_sendRawTransaction", ["0x" + signed.raw_transaction.hex()], rpc_url)
     print(f"\nDeployment tx sent: {tx_hash}")
     print(f"Explorer: https://www.oklink.com/xlayer/tx/{tx_hash}")
     print("Waiting for confirmation (30s)...")

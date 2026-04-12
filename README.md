@@ -83,7 +83,28 @@ AXON exposes **43 production-ready MCP tools** that any Claude, GPT, or open-sou
 
 ---
 
-## Agentic Wallet
+## Onchain Contracts
+
+### AxonVerdictLedger — Public Security Oracle
+
+| Field | Value |
+|-------|-------|
+| **Contract** | [`0x0191d5ada56672507fdb283ac59d45bde08a53f8`](https://www.oklink.com/xlayer/address/0x0191d5ada56672507fdb283ac59d45bde08a53f8) |
+| **Network** | X Layer Mainnet (Chain ID: 196) |
+| **Deploy TX** | [`0x560e04f0161fdc70f261ad48bf2b71fe2d537b5eb389b67b9bcf0cfbc03d3f8d`](https://www.oklink.com/xlayer/tx/0x560e04f0161fdc70f261ad48bf2b71fe2d537b5eb389b67b9bcf0cfbc03d3f8d) |
+| **Role** | Public on-chain oracle — stores every AXON security scan result permanently |
+| **Interface** | `publishVerdict(token, risk, flags, hash)` · `getVerdict(token)` · `totalVerdicts()` |
+| **Writes** | Every `scan_token_security()` call publishes a verdict transaction on X Layer |
+
+Any contract or off-chain consumer can call `getVerdict(tokenAddress)` to read AXON's latest security score for any X Layer token — no API key needed, fully permissionless.
+
+```solidity
+// Read AXON's verdict for any token — on-chain, permissionless
+(uint8 riskScore, uint32 timestamp, uint16 flagCount, bytes32 dataHash)
+    = IAxonVerdictLedger(0x0191d5ada56672507fdb283ac59d45bde08a53f8).getVerdict(token);
+```
+
+### Agentic Wallet — x402 Payment Recipient
 
 | Field | Value |
 |-------|-------|
@@ -756,9 +777,11 @@ curl -X POST https://axon-onld.onrender.com/api/chat \
 
 | Role | Address | Network |
 |------|---------|---------|
-| **Agentic Wallet** (x402 payment recipient) | `0xDb82c0d91E057E05600C8F8dc836bEb41da6df14` | X Layer Mainnet (Chain ID 196) |
+| **AxonVerdictLedger** (security oracle contract) | [`0x0191d5ada56672507fdb283ac59d45bde08a53f8`](https://www.oklink.com/xlayer/address/0x0191d5ada56672507fdb283ac59d45bde08a53f8) | X Layer Mainnet (Chain ID 196) |
+| **Agentic Wallet** (x402 payment recipient / oracle) | [`0xDb82c0d91E057E05600C8F8dc836bEb41da6df14`](https://www.oklink.com/xlayer/address/0xDb82c0d91E057E05600C8F8dc836bEb41da6df14) | X Layer Mainnet (Chain ID 196) |
 
-Explorer: [OKLink](https://www.oklink.com/xlayer/address/0xDb82c0d91E057E05600C8F8dc836bEb41da6df14) · Mainnet proof TX: [#57163818](https://www.oklink.com/x-layer/tx/0x14a9bd9d2cbbb80be3373dd8b414104d107466247c48a2bd3c8ceb8eee58360b)
+- VerdictLedger deploy TX: [`0x560e04f0...d3f8d`](https://www.oklink.com/xlayer/tx/0x560e04f0161fdc70f261ad48bf2b71fe2d537b5eb389b67b9bcf0cfbc03d3f8d)
+- x402 premium tool proof TX: [`0x14a9bd9d...360b`](https://www.oklink.com/x-layer/tx/0x14a9bd9d2cbbb80be3373dd8b414104d107466247c48a2bd3c8ceb8eee58360b) (block #57163818)
 
 ---
 

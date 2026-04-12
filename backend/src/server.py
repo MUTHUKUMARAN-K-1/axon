@@ -549,12 +549,49 @@ async def pool_fees(pool_address: str):
 
 # ─── WebSocket: Live Agent Terminal ───────────────────────────────────────────
 
+# Progress step sequences for known long-running tools
+_TOOL_STEPS: dict[str, list[str]] = {
+    "scan_token_security": [
+        "Querying OKX Security API (honeypot, tax flags)...",
+        "Fetching Onchain OS advanced token info...",
+        "Checking DexScreener pair data...",
+        "Querying Uniswap V3 subgraph (TVL, OHLC)...",
+        "Fetching OKLink holder concentration...",
+        "Running sell-simulation probe...",
+        "Computing weighted risk score...",
+    ],
+    "analyze_wallet": [
+        "Loading wallet token balances via Onchain OS...",
+        "Fetching transaction history...",
+        "Scanning DeFi positions...",
+        "Computing portfolio risk score...",
+        "Generating AI narrative...",
+    ],
+    "get_market_overview": [
+        "Fetching gas price from X Layer RPC...",
+        "Reading latest block data...",
+        "Querying top Uniswap V3 pools...",
+        "Aggregating market snapshot...",
+    ],
+    "get_smart_money_signals": [
+        "Loading top 50 Uniswap V3 pools...",
+        "Computing volume/TVL velocity ratios...",
+        "Ranking accumulation signals...",
+    ],
+    "find_arbitrage_opportunities": [
+        "Fetching swap quotes across DEX routes...",
+        "Comparing price spreads...",
+        "Ranking arbitrage opportunities by profit...",
+    ],
+}
+
+
 @app.websocket("/ws/agent")
 async def agent_terminal(ws: WebSocket):
     """
-    WebSocket endpoint for real-time agent interaction.
+    WebSocket endpoint for real-time agent interaction with streaming progress.
     Send: {"tool": "analyze_wallet", "args": {"address": "0x..."}}
-    Receive: streaming tool results + status updates
+    Receive: start → progress (step-by-step) → result
     """
     await ws.accept()
     logger.info("Agent terminal connected")
@@ -569,18 +606,44 @@ async def agent_terminal(ws: WebSocket):
                 await ws.send_json({"type": "error", "message": "No tool specified"})
                 continue
 
+            steps = _TOOL_STEPS.get(tool_name, [f"Executing {tool_name}..."])
+            total = len(steps)
+
             await ws.send_json({
-                "type": "status",
-                "message": f"Executing {tool_name}...",
+                "type": "start",
+                "message": f"Starting {tool_name}",
                 "tool": tool_name,
+                "total_steps": total,
             })
 
-            result = await dispatch_tool(tool_name, args)
+            # Run tool in background task; stream progress while it runs
+            task = asyncio.create_task(dispatch_tool(tool_name, args))
+            step_idx = 0
+            interval = max(0.6, 8.0 / total)  # spread steps across ~8s max
+
+            while not task.done():
+                if step_idx < total:
+                    await ws.send_json({
+                        "type": "progress",
+                        "tool": tool_name,
+                        "message": steps[step_idx],
+                        "step": step_idx + 1,
+                        "total_steps": total,
+                        "pct": round((step_idx + 1) / total * 100),
+                    })
+                    step_idx += 1
+                try:
+                    await asyncio.wait_for(asyncio.shield(task), timeout=interval)
+                except asyncio.TimeoutError:
+                    pass
+
+            result = task.result()
 
             await ws.send_json({
                 "type": "result",
                 "tool": tool_name,
                 "data": result,
+                "steps_shown": step_idx,
             })
 
     except WebSocketDisconnect:

@@ -89,23 +89,33 @@ async def start_agent_loop():
 
 
 # ─── Intent Router ─────────────────────────────────────────────────────────────
-INTENT_PATTERNS = [
-    (["gas", "gwei", "fee", "cheap"], "get_gas_price", lambda _: {}),
-    (["block", "latest block", "tps", "utilization"], "get_block_info", lambda _: {}),
-    (["market", "overview", "snapshot"], "get_market_overview", lambda _: {}),
-    (["yield", "apy", "farm", "earn", "opportunity", "opportunities"], "get_yield_opportunities",
-     lambda q: {"min_apy": 5.0}),
-    (["pool", "pools", "tvl", "top pool", "uniswap"], "get_uniswap_top_pools",
-     lambda q: {"limit": 5}),
-    (["arbitrage", "arb", "price difference", "spread"], "find_arbitrage_opportunities",
-     lambda q: {"token_address": "0x1e4a5963abfd975d8c9021ce480b42188849d41d", "amount_usd": 1000}),
-    (["chain", "x layer stats", "network info", "chain info"], "get_xlayer_stats", lambda _: {}),
-    (["smart money", "whale", "signal", "accumulation", "hot token"], "get_smart_money_signals",
-     lambda q: {"limit": 10}),
-]
+
+_TOOL_SCHEMA = """\
+Available tools (use EXACTLY these names):
+- get_gas_price          : gas price, gwei, fee, transaction cost
+- get_block_info         : latest block, network health, block number     args: {"block":"latest"}
+- get_market_overview    : market snapshot, what's happening on X Layer
+- get_yield_opportunities: yield, APY, farming, earn, LP rewards          args: {"min_apy":5.0}
+- get_uniswap_top_pools  : pools, TVL, liquidity, top pools               args: {"limit":5}
+- get_smart_money_signals: whale activity, smart money, hot tokens        args: {"limit":10}
+- get_xlayer_stats       : X Layer chain info, network metadata
+- get_swap_quote         : swap, exchange, best rate (needs from/to token addresses)
+- get_cross_chain_quote  : bridge, cross-chain transfer
+- scan_token_security    : security, honeypot, rug, scam check (needs token address)
+- analyze_wallet         : wallet analysis, portfolio risk (needs wallet address)
+- get_native_balance     : OKB balance (needs wallet address)
+- get_transaction_history: transaction history (needs wallet address)     args: {"limit":10}
+- get_token_price        : token price (needs token address)              args: {"chain_id":"196"}
+- get_nft_holdings       : NFT holdings (needs wallet address)
+- get_uniswap_token_analytics: 7-day OHLC for a token (needs token address)
+
+If the question contains an 0x address, extract it and put it in args as the relevant field.
+Reply ONLY with a JSON object: {"tool": "<name>", "args": {<key>:<value>}}
+No explanation, no markdown, just JSON."""
 
 
-def _detect_intent(question: str):
+def _keyword_fallback(question: str) -> tuple[str, dict]:
+    """Keyword-based fallback when LLM router is unavailable."""
     import re
     q = question.lower()
     addr = re.search(r'0x[a-fA-F0-9]{40}', question)
@@ -113,21 +123,72 @@ def _detect_intent(question: str):
         address = addr.group(0)
         if any(w in q for w in ["scan", "safe", "honeypot", "rug", "scam", "security", "risky", "dangerous"]):
             return "scan_token_security", {"token_address": address}
-        if any(w in q for w in ["analyze", "analysis", "portfolio", "wallet", "risk", "holding"]):
-            return "analyze_wallet", {"address": address, "include_ai_insights": True}
+        if any(w in q for w in ["nft", "collectible"]):
+            return "get_nft_holdings", {"address": address}
         if any(w in q for w in ["balance", "okb", "how much"]):
             return "get_native_balance", {"address": address}
         if any(w in q for w in ["transaction", "tx", "history", "activity"]):
             return "get_transaction_history", {"address": address, "limit": 10}
-        if any(w in q for w in ["price", "token", "analytics"]):
-            return "get_uniswap_token_analytics", {"token_address": address}
+        if any(w in q for w in ["price"]):
+            return "get_token_price", {"token_address": address, "chain_id": "196"}
         return "analyze_wallet", {"address": address, "include_ai_insights": True}
-
-    for keywords, tool, arg_fn in INTENT_PATTERNS:
-        if any(kw in q for kw in keywords):
-            return tool, arg_fn(q)
-
+    if any(w in q for w in ["gas", "gwei", "fee"]):
+        return "get_gas_price", {}
+    if any(w in q for w in ["block", "latest block"]):
+        return "get_block_info", {"block": "latest"}
+    if any(w in q for w in ["yield", "apy", "farm", "earn"]):
+        return "get_yield_opportunities", {"min_apy": 5.0}
+    if any(w in q for w in ["pool", "tvl", "uniswap"]):
+        return "get_uniswap_top_pools", {"limit": 5}
+    if any(w in q for w in ["whale", "smart money", "signal", "accumulation"]):
+        return "get_smart_money_signals", {"limit": 10}
+    if any(w in q for w in ["bridge", "cross-chain"]):
+        return "get_cross_chain_quote", {}
     return "get_market_overview", {}
+
+
+async def _llm_route_intent(question: str) -> tuple[str, dict]:
+    """
+    Use Groq LLaMA to classify user intent → (tool_name, args).
+    Falls back to keyword routing if Groq is unavailable.
+    """
+    groq_key = os.getenv("GROQ_API_KEY", "")
+    if not groq_key:
+        return _keyword_fallback(question)
+
+    try:
+        import httpx
+        payload = {
+            "model": "llama-3.3-70b-versatile",
+            "messages": [
+                {"role": "system", "content": _TOOL_SCHEMA},
+                {"role": "user", "content": question},
+            ],
+            "max_tokens": 120,
+            "temperature": 0.0,
+        }
+        async with httpx.AsyncClient(timeout=8.0) as client:
+            r = await client.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                json=payload,
+                headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
+            )
+        text = r.json()["choices"][0]["message"]["content"].strip()
+
+        import re
+        match = re.search(r'\{.*\}', text, re.DOTALL)
+        if match:
+            parsed = json.loads(match.group(0))
+            tool = parsed.get("tool", "").strip()
+            args = parsed.get("args", {})
+            if tool and isinstance(args, dict):
+                logger.info(f"LLM router → tool={tool} args={args}")
+                return tool, args
+
+    except Exception as e:
+        logger.warning(f"LLM router failed, using keyword fallback: {e}")
+
+    return _keyword_fallback(question)
 
 
 async def _llm_format_response(question: str, tool: str, result: dict) -> str:
@@ -149,7 +210,7 @@ Answer the question directly using this data."""
 
 async def handle_chat(question: str) -> dict:
     from .mcp_handler import dispatch_tool
-    tool_name, args = _detect_intent(question)
+    tool_name, args = await _llm_route_intent(question)
     _log_activity("action", f"Chat: '{question[:50]}' → {tool_name}", {"tool": tool_name})
     try:
         result = await dispatch_tool(tool_name, args)

@@ -1,7 +1,7 @@
 import base64
 import json
 
-from src.features import _detect_intent, _extract_tx_hash
+from src.features import _keyword_fallback as _detect_intent, _extract_tx_hash
 
 
 def test_extract_tx_hash_accepts_raw_hash():

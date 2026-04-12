@@ -449,6 +449,18 @@ GET /api/agent/activity
 | **Security Hub** | `/security` 🆕 | Address blacklist check, URL phishing scanner, full token security scan |
 | **DeFi Hub** | `/defi` 🆕 | NFT portfolio, yield products, Uniswap V3 protocol stats (TVL / volume / fees) |
 
+### UI Features
+
+| Feature | Description |
+|---------|-------------|
+| **Dark / Light theme** | Toggle at any time — dark mode uses `#0a0e14` bg with JetBrains Mono font and green accents; preference persisted to localStorage |
+| **Dashboard / Terminal mode** | Header toggle switches between the graphical dashboard and the agent terminal with tool drawer |
+| **MCP Tool Drawer** | 43 tools organised by 7 domains (Portfolio, Market, Swap & Bridge, Security, Explorer, Agent, System) — collapsible, click any tool to pre-fill the terminal |
+| **Impersonation mode** | Enter any `0x` address from the header popover to inspect its full portfolio, DeFi positions, and risk score without connecting a wallet |
+| **MCP status badge** | Live connectivity indicator in header — shows `MCP LIVE` or `MCP OFF` based on `/health` ping |
+| **x402 badge** | Always-visible premium gate indicator in header |
+| **Wallet connection** | RainbowKit-style connect button in both sidebar and header |
+
 ---
 
 ## REST API Reference
@@ -613,7 +625,7 @@ AXON is published as a reusable **Onchain OS skill** installable by any AI agent
 npx skills add okx/plugin-store --skill axon-xlayer-intelligence
 ```
 
-The skill exposes all 19 MCP tools with:
+The skill exposes all 43 MCP tools with:
 - Full `curl` examples for every endpoint
 - x402 payment flow documentation
 - Security scanner usage guide
@@ -656,25 +668,69 @@ npm run dev
 
 ---
 
-## Running Tests
+## Testing
+
+### Test Coverage
+
+| Suite | Tests | What It Covers |
+|-------|-------|----------------|
+| `TestHealth` | 3 | `/health`, `/mcp/tools`, server connectivity |
+| `TestMCPTools` | 4 | MCP tool registry, schema validation, tool count |
+| `TestFreeMCPCalls` | 3 | `get_market_overview`, `get_gas_price`, `get_uniswap_top_pools` |
+| `TestX402Gate` | 4 | 402 rejection (no header), invalid tx, replay protection, valid OKB payment |
+| `TestAgentActivity` | 2 | Activity feed format, signal type coverage |
+| `TestChatAPI` | 2 | Intent routing (security, portfolio), response structure |
+| `TestSecurityScanner` | 4 | 6-source scan, risk label, scoring weights, USDT safe scan |
+| `TestOKLinkExplorer` | 3 | Address info, block detail, contract verification |
+| `TestWebSocket` | 2 | WebSocket connect, progress streaming (start → progress → result) |
+| **Total** | **27** | All critical paths covered |
+
+### Run Tests
 
 ```bash
 cd backend
 
-# Full test suite against live deployment
+# Full suite against live deployment
 pytest tests/ -v
 
 # Against local instance
 AXON_TEST_URL=http://localhost:3000 pytest tests/ -v
 
-# x402 payment tests only
+# x402 gate only
 pytest tests/ -v -k "X402"
 
-# Skip LLM calls (fast)
+# Security scanner only
+pytest tests/ -v -k "Security"
+
+# Skip LLM calls (fast, no GROQ_API_KEY needed)
 pytest tests/ -v -k "not chat"
 ```
 
-**Test suite:** `TestHealth` (3) · `TestMCPTools` (4) · `TestFreeMCPCalls` (3) · `TestX402` (4) · `TestAgentActivity` (2) · `TestChatAPI` (2) = **18 tests**
+### Live Verification
+
+All free MCP tools are callable without auth:
+
+```bash
+# Health
+curl https://axon-onld.onrender.com/health
+
+# List all 43 tools
+curl https://axon-onld.onrender.com/mcp/tools | python -m json.tool
+
+# Security scan (USDT on X Layer — should return risk_score: 0)
+curl https://axon-onld.onrender.com/api/token/0x1e4a5963abfd975d8c9021ce480b42188849d41d/security
+
+# Smart money signals
+curl https://axon-onld.onrender.com/api/smart-money/signals
+
+# Agent activity feed
+curl https://axon-onld.onrender.com/api/agent/activity
+
+# Natural language chat
+curl -X POST https://axon-onld.onrender.com/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What is the gas price on X Layer?"}'
+```
 
 ---
 
@@ -810,10 +866,10 @@ AXON is not a DeFi app that uses AI as a gimmick. It is **the intelligence API l
 2. **15 Onchain OS modules** — deeper integration than any other hackathon project: NFT, yield products, address security, URL safety, cross-chain bridge, swap execution, TX decode, net worth, and more
 3. **6-source security scanner** — multi-source consensus eliminates false negatives. Uses OKX's own security API, DexScreener, DefiLlama, Uniswap V3, OKLink, and Onchain OS simultaneously
 4. **Real on-chain x402 verification** — not simulated. OKLink confirms every payment tx before execution. Replay protection prevents abuse. Mainnet proof: block #57163818
-5. **11-page frontend** — Explorer, Security Hub, DeFi Hub, NFT viewer, Token Screener, natural language chat, agent terminal, autonomous activity feed
-6. **Natural language routing** — 8+ intent patterns covering every major X Layer use case
+5. **Production-grade UI** — dark/light theme toggle, Dashboard + Terminal dual mode, collapsible 43-tool drawer organized by domain, impersonation mode to inspect any X Layer address, live MCP status badge
+6. **Natural language routing** — Groq LLaMA 3.3 70B classifies 8+ intent types with keyword fallback — no regex brittle matching
 7. **Plugin Store published** — [PR #93](https://github.com/okx/plugin-store/pull/93) — installable by any AI agent in one command
-8. **Fully deployed** — frontend on Vercel, backend on Render, live right now — zero setup to evaluate
+8. **Fully deployed and tested** — 27 automated tests, frontend on Vercel, backend on Render with UptimeRobot keeping it live 24/7, zero setup to evaluate
 
 Every DeFi protocol on X Layer becomes AI-accessible through AXON. Every new token can be security-scanned. Every wallet can be analyzed. Every yield opportunity can be surfaced. That is the permanent intelligence layer X Layer deserves.
 

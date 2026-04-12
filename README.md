@@ -6,9 +6,20 @@
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-axon--six--amber.vercel.app-brightgreen?style=for-the-badge)](https://axon-six-amber.vercel.app)
 [![API Docs](https://img.shields.io/badge/API%20Docs-Swagger%20UI-blue?style=for-the-badge)](https://axon-onld.onrender.com/docs)
 [![X Layer](https://img.shields.io/badge/Chain-X%20Layer%20196-blueviolet?style=for-the-badge)](https://www.okx.com/xlayer)
-[![MCP Tools](https://img.shields.io/badge/MCP%20Tools-43%20Live-cyan?style=for-the-badge)](https://axon-onld.onrender.com/mcp/tools)
+[![MCP Tools](https://img.shields.io/badge/MCP%20Tools-45%20Live-cyan?style=for-the-badge)](https://axon-onld.onrender.com/mcp/tools)
 [![x402](https://img.shields.io/badge/x402-Payment%20Gate-yellow?style=for-the-badge)](https://axon-onld.onrender.com/api/x402/pricing)
 [![Plugin Store](https://img.shields.io/badge/Plugin%20Store-PR%20%2393-orange?style=for-the-badge)](https://github.com/okx/plugin-store/pull/93)
+
+---
+
+## Judge Quick Reference
+
+| Hackathon Criterion (25% each) | AXON Evidence |
+|-------------------------------|---------------|
+| **X Layer Integration** | 45 MCP tools hitting X Layer RPC, OKLink, OKX DEX, OKX Onchain OS — all on Chain ID 196. [Mainnet TX](https://www.oklink.com/x-layer/tx/0x14a9bd9d2cbbb80be3373dd8b414104d107466247c48a2bd3c8ceb8eee58360b) |
+| **Smart Contracts** | 2 deployed contracts: [AxonVerdictLedger](https://www.oklink.com/xlayer/address/0x0191d5ada56672507fdb283ac59d45bde08a53f8) (public security oracle) + [AxonConfidenceBond](https://www.oklink.com/xlayer/address/0xe164011de202eb0ebf5f01ee5d9851c801a9c675) (skin-in-the-game bonds) |
+| **MCP / Plugin Store** | [PR #93 submitted](https://github.com/okx/plugin-store/pull/93) · 45 tools live at `https://axon-onld.onrender.com/mcp/tools` · Full OpenAPI at `/docs` |
+| **Innovation / AI** | x402 two-level micro-payments · Autonomous 5-min agent loop · 6-source parallel security scoring · Natural language → MCP tool routing |
 
 ---
 
@@ -20,7 +31,7 @@ AI agents can reason, plan, and execute — but they are **blind to onchain acti
 
 **AXON solves this.** Named after the axon — the neural transmitter that carries signals between neurons — AXON is the intelligence transmitter between AI agents and X Layer's onchain reality.
 
-AXON exposes **43 production-ready MCP tools** that any Claude, GPT, or open-source AI agent can call to:
+AXON exposes **45 production-ready MCP tools** that any Claude, GPT, or open-source AI agent can call to:
 
 - 🛡️ **Scan any token for scams** — 6-source security analysis with honeypot detection, holder concentration, rug risk scoring, and DexScreener pair data
 - 💬 **Ask in plain English** — "Is this token safe?" → AXON routes, scans, and answers with structured risk data
@@ -60,7 +71,7 @@ AXON exposes **43 production-ready MCP tools** that any Claude, GPT, or open-sou
 │          │                 │           └──────────────┬───────────┘ │
 │          │                 │                          │             │
 │  ┌───────▼─────────────────▼──────────────────────────▼──────────┐ │
-│  │         MCP TOOL REGISTRY  (43 tools)  +  Chat NLP Router     │ │
+│  │         MCP TOOL REGISTRY  (45 tools)  +  Chat NLP Router     │ │
 │  │              x402 Payment Gate  +  Autonomous Loop            │ │
 │  └───┬────────────────────────┬───────────────────────┬──────────┘ │
 └──────┼────────────────────────┼───────────────────────┼────────────┘
@@ -141,7 +152,7 @@ AxonConfidenceBond(0xe164011de202eb0ebf5f01ee5d9851c801a9c675).challenge(tokenAd
 
 ---
 
-## MCP Tools — Complete List (43 Tools)
+## MCP Tools — Complete List (45 Tools)
 
 | # | Tool | Category | Premium | Description |
 |---|------|----------|---------|-------------|
@@ -188,6 +199,8 @@ AxonConfidenceBond(0xe164011de202eb0ebf5f01ee5d9851c801a9c675).challenge(tokenAd
 | 41 | `get_token_transfer_list` | OKLink | free | All recent transfers for a specific token contract |
 | 42 | `get_rich_list` | OKLink | free | Top holders (rich list) for OKB or any token |
 | 43 | `get_internal_transactions` | OKLink | free | Internal contract calls (traces) for any transaction |
+| 44 | `get_onchain_verdict` | Security | free | Read AXON's on-chain verdict for any token from AxonVerdictLedger |
+| 45 | `get_total_verdicts` | Security | free | Total number of security verdicts published to the on-chain oracle |
 
 > 🔒 x402 = Premium tool requiring OKB micro-payment on X Layer. See `/api/x402/pricing`.
 

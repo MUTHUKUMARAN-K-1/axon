@@ -113,7 +113,14 @@ Any contract or off-chain consumer can call `getVerdict(tokenAddress)` to read A
 | **Deploy TX** | [`0xc6dbdcbc11ff27fc1db178d07f0c932ccb902b44a5dbfea5b4db0650e0ddb2e2`](https://www.oklink.com/xlayer/tx/0xc6dbdcbc11ff27fc1db178d07f0c932ccb902b44a5dbfea5b4db0650e0ddb2e2) |
 | **Role** | AXON locks 0.001 OKB per SAFE verdict — challengers win the bond if verdict flips to HIGH RISK within 7 days |
 | **Pre-funded** | 0.05 OKB (50 bonds) at deploy |
+| **Auto-lock** | Every `scan_token_security()` call with risk < 20 automatically fires `lockBond()` on-chain (~15s after verdict confirm) |
 | **Interface** | `lockBond(token)` · `challenge(token)` · `releaseExpired(token)` · `isChallengeOpen(token)` |
+
+**Full automated flow:**
+1. `scan_token_security(token)` → risk score computed
+2. `publishVerdict(token, risk, flags, hash)` → written to AxonVerdictLedger (fire-and-forget)
+3. If risk < 20 (SAFE): waits ~15s for confirmation → `lockBond(token)` → 0.001 OKB locked in AxonConfidenceBond
+4. Anyone can call `challenge(token)` within 7 days if the token turns dangerous — wins the bond
 
 ```solidity
 // Challenge a SAFE verdict — win the bond if token turns dangerous
@@ -497,6 +504,7 @@ GET /api/agent/activity
 | **MCP status badge** | Live connectivity indicator in header — shows `MCP LIVE` or `MCP OFF` based on `/health` ping |
 | **x402 badge** | Always-visible premium gate indicator in header |
 | **Wallet connection** | RainbowKit-style connect button in both sidebar and header |
+| **Agent Activity feed** | Dark terminal-style live feed with timeline track, collapsible event rows, color-coded risk tags, copy-on-click token addresses, animated live pulse dot, and blinking newest-event glow |
 
 ---
 

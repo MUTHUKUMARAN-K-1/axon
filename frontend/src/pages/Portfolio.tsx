@@ -48,8 +48,12 @@ const EXAMPLE_ADDRESSES = [
   '0x8Ba1f109551bD432803012645Ac136ddd64DBA72',
 ]
 
-export default function Portfolio() {
-  const [address, setAddress] = useState('')
+interface PortfolioProps {
+  impersonateAddr?: string
+}
+
+export default function Portfolio({ impersonateAddr = '' }: PortfolioProps) {
+  const [address, setAddress] = useState(impersonateAddr)
   const [analysis, setAnalysis] = useState<WalletAnalysis | null>(null)
   const [loading, setLoading] = useState(false)
 

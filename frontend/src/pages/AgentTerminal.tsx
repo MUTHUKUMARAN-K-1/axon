@@ -59,6 +59,17 @@ export default function AgentTerminal() {
     }).catch(() => addLog('error', 'Could not connect to AXON backend. Is it running?'))
   }, [])
 
+  // Listen for tool selection from the Tool Drawer
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const toolName = (e as CustomEvent).detail as string
+      setInput(toolName)
+      inputRef.current?.focus()
+    }
+    window.addEventListener('axon:tool-select', handler)
+    return () => window.removeEventListener('axon:tool-select', handler)
+  }, [])
+
   const executeCommand = async (toolName: string, args: Record<string, unknown> = {}) => {
     if (!toolName.trim()) return
     setRunning(true)

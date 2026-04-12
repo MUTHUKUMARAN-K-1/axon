@@ -338,6 +338,215 @@ async def get_xlayer_stats() -> dict:
         return {"success": False, "error": str(e)}
 
 
+async def get_wallet_net_worth(address: str) -> dict:
+    """
+    MCP Tool: get_wallet_net_worth
+    Returns total portfolio value across all chains for a wallet (cross-chain net worth).
+    Uses OKX Onchain OS /api/v5/wallet/asset/net-worth.
+    """
+    try:
+        path = "/api/v5/wallet/asset/net-worth"
+        headers = _get_okx_headers(path)
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            r = await client.get(
+                f"{OKX_BASE}{path}",
+                params={"address": address},
+                headers=headers or None,
+            )
+            data = r.json()
+        if data.get("code") == "0" and data.get("data"):
+            d = data["data"][0]
+            return {
+                "success": True,
+                "address": address,
+                "total_usd": d.get("totalValue", "0"),
+                "chains": [
+                    {
+                        "chain": c.get("chainName", ""),
+                        "chain_id": c.get("chainIndex", ""),
+                        "value_usd": c.get("totalValue", "0"),
+                    }
+                    for c in d.get("chainNetWorthDetails", [])
+                ],
+            }
+        return {"success": False, "error": data.get("msg", "API error"), "total_usd": "0"}
+    except Exception as e:
+        logger.error(f"get_wallet_net_worth error: {e}")
+        return {"success": False, "error": str(e), "total_usd": "0"}
+
+
+async def get_token_detail(token_address: str, chain_id: str = XLAYER_CHAIN_ID) -> dict:
+    """
+    MCP Tool: get_token_detail
+    Returns rich token metadata: holder count, FDV, market cap rank, socials, website.
+    Uses OKX Onchain OS /api/v5/wallet/token/token-detail.
+    """
+    try:
+        path = "/api/v5/wallet/token/token-detail"
+        headers = _get_okx_headers(path)
+        async with httpx.AsyncClient(timeout=12.0) as client:
+            r = await client.get(
+                f"{OKX_BASE}{path}",
+                params={"chainIndex": chain_id, "tokenAddress": token_address},
+                headers=headers or None,
+            )
+            data = r.json()
+        if data.get("code") == "0" and data.get("data"):
+            d = data["data"][0]
+            return {
+                "success": True,
+                "token_address": token_address,
+                "chain": "X Layer",
+                "name": d.get("tokenName", ""),
+                "symbol": d.get("tokenSymbol", ""),
+                "decimals": d.get("decimals", 18),
+                "total_supply": d.get("totalSupply", "0"),
+                "holder_count": d.get("holderCount", 0),
+                "market_cap_usd": d.get("marketCap", "0"),
+                "fdv_usd": d.get("fullyDilutedValuation", "0"),
+                "rank": d.get("marketCapRank", None),
+                "website": d.get("officialWebsite", ""),
+                "description": d.get("tokenDesc", ""),
+                "socials": {
+                    "twitter": d.get("twitterUrl", ""),
+                    "telegram": d.get("telegramUrl", ""),
+                    "github": d.get("githubUrl", ""),
+                },
+                "logo": d.get("tokenLogoUrl", ""),
+            }
+        return {"success": False, "error": data.get("msg", "API error")}
+    except Exception as e:
+        logger.error(f"get_token_detail error: {e}")
+        return {"success": False, "error": str(e)}
+
+
+async def lookup_transaction(tx_hash: str, chain_id: str = XLAYER_CHAIN_ID) -> dict:
+    """
+    MCP Tool: lookup_transaction
+    Decode a transaction hash — get from/to, value, status, gas, token transfers.
+    Uses OKX Onchain OS /api/v5/wallet/post-transaction/transaction-by-hash.
+    """
+    try:
+        path = "/api/v5/wallet/post-transaction/transaction-by-hash"
+        headers = _get_okx_headers(path)
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            r = await client.get(
+                f"{OKX_BASE}{path}",
+                params={"chainIndex": chain_id, "txHash": tx_hash},
+                headers=headers or None,
+            )
+            data = r.json()
+        if data.get("code") == "0" and data.get("data"):
+            d = data["data"][0]
+            txs = d.get("transactionList", [])
+            tx = txs[0] if txs else {}
+            return {
+                "success": True,
+                "tx_hash": tx_hash,
+                "chain": "X Layer",
+                "status": tx.get("txStatus", ""),
+                "block": tx.get("height", ""),
+                "timestamp": tx.get("txTime", ""),
+                "from": (tx.get("from") or [{}])[0].get("address", ""),
+                "to": (tx.get("to") or [{}])[0].get("address", ""),
+                "value": tx.get("amount", "0"),
+                "symbol": tx.get("symbol", "OKB"),
+                "gas_fee": tx.get("txFee", "0"),
+                "type": tx.get("txType", ""),
+                "token_transfers": tx.get("tokenTransferDetails", []),
+            }
+        return {"success": False, "error": data.get("msg", "API error")}
+    except Exception as e:
+        logger.error(f"lookup_transaction error: {e}")
+        return {"success": False, "error": str(e)}
+
+
+async def get_supported_tokens(chain_id: str = XLAYER_CHAIN_ID) -> dict:
+    """
+    MCP Tool: get_supported_tokens
+    Returns all tokens supported by the OKX DEX aggregator on X Layer.
+    """
+    try:
+        path = "/api/v5/dex/aggregator/all-tokens"
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            r = await client.get(
+                f"{OKX_BASE}{path}",
+                params={"chainId": chain_id},
+            )
+            data = r.json()
+        if data.get("code") == "0":
+            tokens = data.get("data", [])
+            return {
+                "success": True,
+                "chain": "X Layer",
+                "token_count": len(tokens),
+                "tokens": [
+                    {
+                        "address": t.get("tokenContractAddress", ""),
+                        "symbol": t.get("tokenSymbol", ""),
+                        "name": t.get("tokenName", ""),
+                        "decimals": t.get("decimals", 18),
+                        "logo": t.get("tokenLogoUrl", ""),
+                    }
+                    for t in tokens[:100]  # cap at 100 to save memory
+                ],
+            }
+        return {"success": False, "error": data.get("msg", "API error"), "tokens": []}
+    except Exception as e:
+        logger.error(f"get_supported_tokens error: {e}")
+        return {"success": False, "error": str(e), "tokens": []}
+
+
+async def get_cross_chain_quote(
+    from_chain_id: str,
+    to_chain_id: str,
+    from_token: str,
+    to_token: str,
+    amount: str,
+    user_wallet: str,
+    slippage: str = "0.5",
+) -> dict:
+    """
+    MCP Tool: get_cross_chain_quote
+    Get a cross-chain bridge quote via OKX DEX cross-chain aggregator.
+    E.g. ETH on Ethereum → OKB on X Layer.
+    """
+    try:
+        path = "/api/v5/dex/cross-chain/quote"
+        params = {
+            "fromChainId": from_chain_id,
+            "toChainId": to_chain_id,
+            "fromTokenAddress": from_token,
+            "toTokenAddress": to_token,
+            "amount": amount,
+            "slippage": slippage,
+            "userWalletAddress": user_wallet,
+        }
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            r = await client.get(f"{OKX_BASE}{path}", params=params)
+            data = r.json()
+        if data.get("code") == "0" and data.get("data"):
+            q = data["data"][0]
+            return {
+                "success": True,
+                "from_chain_id": from_chain_id,
+                "to_chain_id": to_chain_id,
+                "from_token": from_token,
+                "to_token": to_token,
+                "from_amount": amount,
+                "to_amount": q.get("toTokenAmount", "0"),
+                "minimum_received": q.get("minimumReceived", "0"),
+                "bridge": q.get("bridgeName", ""),
+                "fee_usd": q.get("fee", {}).get("totalFee", "0"),
+                "estimated_time_sec": q.get("estimatedTime", 0),
+                "price_impact": q.get("priceImpact", "0"),
+            }
+        return {"success": False, "error": data.get("msg", "Quote unavailable"), "to_amount": "0"}
+    except Exception as e:
+        logger.error(f"get_cross_chain_quote error: {e}")
+        return {"success": False, "error": str(e), "to_amount": "0"}
+
+
 async def get_swap_quote_onchain_os(
     from_token: str,
     to_token: str,

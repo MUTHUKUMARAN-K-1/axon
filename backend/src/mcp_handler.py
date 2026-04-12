@@ -13,6 +13,11 @@ from .tools.onchain_os import (
     get_defi_positions,
     get_xlayer_stats,
     get_swap_quote_onchain_os,
+    get_wallet_net_worth,
+    get_token_detail,
+    lookup_transaction,
+    get_supported_tokens,
+    get_cross_chain_quote,
 )
 from .tools.uniswap import (
     get_uniswap_pool_data,
@@ -242,6 +247,68 @@ MCP_TOOLS = [
             },
         },
     },
+    {
+        "name": "get_wallet_net_worth",
+        "description": "Get total portfolio value across all chains for a wallet via OKX Onchain OS",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "address": {"type": "string", "description": "EVM wallet address"},
+            },
+            "required": ["address"],
+        },
+    },
+    {
+        "name": "get_token_detail",
+        "description": "Get rich token metadata: holder count, FDV, market cap rank, website, socials, description via Onchain OS",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "token_address": {"type": "string"},
+                "chain_id": {"type": "string", "default": "196"},
+            },
+            "required": ["token_address"],
+        },
+    },
+    {
+        "name": "lookup_transaction",
+        "description": "Decode any transaction hash on X Layer — from/to, value, status, gas, token transfers via Onchain OS",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "tx_hash": {"type": "string", "description": "Transaction hash (0x...)"},
+                "chain_id": {"type": "string", "default": "196"},
+            },
+            "required": ["tx_hash"],
+        },
+    },
+    {
+        "name": "get_supported_tokens",
+        "description": "List all tokens supported by OKX DEX aggregator on X Layer",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "chain_id": {"type": "string", "default": "196"},
+            },
+        },
+    },
+    {
+        "name": "get_cross_chain_quote",
+        "description": "Get a cross-chain bridge quote via OKX DEX — e.g. ETH on Ethereum to OKB on X Layer",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "from_chain_id": {"type": "string", "description": "Source chain ID (e.g. 1 for Ethereum)"},
+                "to_chain_id": {"type": "string", "default": "196", "description": "Destination chain ID"},
+                "from_token": {"type": "string", "description": "Source token address"},
+                "to_token": {"type": "string", "description": "Destination token address"},
+                "amount": {"type": "string", "description": "Amount in smallest unit (wei)"},
+                "user_wallet": {"type": "string", "description": "User wallet address"},
+                "slippage": {"type": "string", "default": "0.5"},
+            },
+            "required": ["from_chain_id", "from_token", "to_token", "amount", "user_wallet"],
+        },
+    },
 ]
 
 
@@ -284,6 +351,19 @@ async def dispatch_tool(tool_name: str, args: Dict[str, Any]) -> Any:
         ),
         "scan_token_security": lambda: scan_token_security(args["token_address"]),
         "get_smart_money_signals": lambda: get_smart_money_signals(args.get("limit", 10)),
+        "get_wallet_net_worth": lambda: get_wallet_net_worth(args["address"]),
+        "get_token_detail": lambda: get_token_detail(
+            args["token_address"], args.get("chain_id", "196")
+        ),
+        "lookup_transaction": lambda: lookup_transaction(
+            args["tx_hash"], args.get("chain_id", "196")
+        ),
+        "get_supported_tokens": lambda: get_supported_tokens(args.get("chain_id", "196")),
+        "get_cross_chain_quote": lambda: get_cross_chain_quote(
+            args["from_chain_id"], args.get("to_chain_id", "196"),
+            args["from_token"], args["to_token"], args["amount"],
+            args["user_wallet"], args.get("slippage", "0.5"),
+        ),
     }
 
     handler = dispatch.get(tool_name)

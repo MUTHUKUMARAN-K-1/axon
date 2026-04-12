@@ -7,6 +7,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPExcept
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.websockets import WebSocketState
 from contextlib import asynccontextmanager
 import uvicorn
@@ -32,6 +33,23 @@ from .agents.security_agent import scan_token_security, get_smart_money_signals,
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 logger = logging.getLogger("axon.server")
 
+
+def _parse_cors_origins() -> list[str]:
+    raw_origins = os.getenv("AXON_CORS_ORIGINS", "*")
+    if raw_origins.strip() == "*":
+        return ["*"]
+    return [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
+
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("X-Frame-Options", "DENY")
+        response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+        return response
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Start background agent loop on startup."""
@@ -51,14 +69,15 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS
+cors_origins = _parse_cors_origins()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=cors_origins,
+    allow_credentials=cors_origins != ["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(SecurityHeadersMiddleware)
 
 
 @app.exception_handler(RequestValidationError)
@@ -409,6 +428,52 @@ async def batch_token_security(req: BatchScanRequest):
     Returns risk-sorted leaderboard — highest risk first.
     """
     return await batch_security_scan(req.token_addresses)
+
+
+# ─── Onchain OS Extended Endpoints ───────────────────────────────────────────
+
+from .tools.onchain_os import (
+    get_wallet_net_worth, get_token_detail,
+    lookup_transaction, get_supported_tokens, get_cross_chain_quote,
+)
+
+@app.get("/api/wallet/{address}/net-worth", tags=["Portfolio"])
+async def wallet_net_worth(address: str):
+    """Total portfolio value across all chains."""
+    return await get_wallet_net_worth(address)
+
+@app.get("/api/token/{token_address}/detail", tags=["Token"])
+async def token_detail(token_address: str, chain_id: str = "196"):
+    """Rich token metadata: holders, FDV, socials, description."""
+    return await get_token_detail(token_address, chain_id)
+
+@app.get("/api/tx/{tx_hash}", tags=["Explorer"])
+async def transaction_lookup(tx_hash: str, chain_id: str = "196"):
+    """Decode any transaction hash on X Layer."""
+    return await lookup_transaction(tx_hash, chain_id)
+
+@app.get("/api/tokens/supported", tags=["DEX"])
+async def supported_tokens(chain_id: str = "196"):
+    """All tokens supported by OKX DEX aggregator on X Layer."""
+    return await get_supported_tokens(chain_id)
+
+class CrossChainQuoteRequest(_BM):
+    from_chain_id: str
+    to_chain_id: str = "196"
+    from_token: str
+    to_token: str
+    amount: str
+    user_wallet: str
+    slippage: str = "0.5"
+
+@app.post("/api/bridge/quote", tags=["DEX"])
+async def cross_chain_quote(req: CrossChainQuoteRequest):
+    """Cross-chain bridge quote via OKX DEX aggregator."""
+    return await get_cross_chain_quote(
+        req.from_chain_id, req.to_chain_id,
+        req.from_token, req.to_token,
+        req.amount, req.user_wallet, req.slippage,
+    )
 
 
 # ─── WebSocket: Live Agent Terminal ───────────────────────────────────────────

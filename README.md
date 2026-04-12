@@ -6,7 +6,7 @@
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-axon--six--amber.vercel.app-brightgreen?style=for-the-badge)](https://axon-six-amber.vercel.app)
 [![API Docs](https://img.shields.io/badge/API%20Docs-Swagger%20UI-blue?style=for-the-badge)](https://axon-onld.onrender.com/docs)
 [![X Layer](https://img.shields.io/badge/Chain-X%20Layer%20196-blueviolet?style=for-the-badge)](https://www.okx.com/xlayer)
-[![MCP Tools](https://img.shields.io/badge/MCP%20Tools-19%20Live-cyan?style=for-the-badge)](https://axon-onld.onrender.com/mcp/tools)
+[![MCP Tools](https://img.shields.io/badge/MCP%20Tools-43%20Live-cyan?style=for-the-badge)](https://axon-onld.onrender.com/mcp/tools)
 [![x402](https://img.shields.io/badge/x402-Payment%20Gate-yellow?style=for-the-badge)](https://axon-onld.onrender.com/api/x402/pricing)
 [![Plugin Store](https://img.shields.io/badge/Plugin%20Store-PR%20%2393-orange?style=for-the-badge)](https://github.com/okx/plugin-store/pull/93)
 
@@ -20,14 +20,16 @@ AI agents can reason, plan, and execute — but they are **blind to onchain acti
 
 **AXON solves this.** Named after the axon — the neural transmitter that carries signals between neurons — AXON is the intelligence transmitter between AI agents and X Layer's onchain reality.
 
-AXON exposes **19 production-ready MCP tools** that any Claude, GPT, or open-source AI agent can call to:
+AXON exposes **43 production-ready MCP tools** that any Claude, GPT, or open-source AI agent can call to:
 
 - 🛡️ **Scan any token for scams** — 6-source security analysis with honeypot detection, holder concentration, rug risk scoring, and DexScreener pair data
 - 💬 **Ask in plain English** — "Is this token safe?" → AXON routes, scans, and answers with structured risk data
 - 📈 **Track smart money signals** — velocity-based accumulation detection across all Uniswap V3 pools
-- 🔍 **Analyze wallets with AI** — risk scores, portfolio health, holdings analysis via Onchain OS
-- 🦄 **Query Uniswap V3** — pool TVL, 7-day OHLC, yield APY, swap routing
-- 🤖 **Autonomous agent loop** — monitors X Layer every 60s for gas, yield, and security signals
+- 🔍 **Analyze wallets with AI** — risk scores, portfolio health, NFT holdings, net worth via Onchain OS
+- 🦄 **Query Uniswap V3** — pool TVL, 7-day OHLC, yield APY, fee revenue, protocol stats, swap routing
+- 🔎 **OKLink Explorer** — address info, block details, contract verification, pending TXs, rich list, internal traces
+- 🌉 **Cross-chain bridge** — quote and route assets across chains via OKX DEX aggregator
+- 🤖 **Autonomous agent loop** — monitors X Layer every 5 min for gas, yield, and security signals
 - 💰 **x402 micro-payment gate** — premium tools require OKB payment, verified on-chain via OKLink
 
 **Arena:** X Layer Arena + Skills Arena  
@@ -58,7 +60,7 @@ AXON exposes **19 production-ready MCP tools** that any Claude, GPT, or open-sou
 │          │                 │           └──────────────┬───────────┘ │
 │          │                 │                          │             │
 │  ┌───────▼─────────────────▼──────────────────────────▼──────────┐ │
-│  │         MCP TOOL REGISTRY  (19 tools)  +  Chat NLP Router     │ │
+│  │         MCP TOOL REGISTRY  (43 tools)  +  Chat NLP Router     │ │
 │  │              x402 Payment Gate  +  Autonomous Loop            │ │
 │  └───┬────────────────────────┬───────────────────────┬──────────┘ │
 └──────┼────────────────────────┼───────────────────────┼────────────┘
@@ -95,7 +97,7 @@ AXON exposes **19 production-ready MCP tools** that any Claude, GPT, or open-sou
 
 ---
 
-## MCP Tools — Complete List (19 Tools)
+## MCP Tools — Complete List (43 Tools)
 
 | # | Tool | Category | Premium | Description |
 |---|------|----------|---------|-------------|
@@ -113,11 +115,35 @@ AXON exposes **19 production-ready MCP tools** that any Claude, GPT, or open-sou
 | 12 | `get_uniswap_pool_data` | Uniswap | free | Pool TVL/volume/fees for any token pair |
 | 13 | `get_uniswap_top_pools` | Uniswap | free | Top X Layer pools ranked by TVL |
 | 14 | `get_uniswap_token_analytics` | Uniswap | free | 7-day OHLC + liquidity for any token |
-| 15 | `get_swap_quote` | Swap | free | Best route via OKX DEX aggregator |
-| 16 | `get_yield_opportunities` | Intelligence | free | Yield farming above configurable APY threshold |
-| 17 | `find_arbitrage_opportunities` | Intelligence | 🔒 x402 | Price discrepancy scanner across all routes |
-| 18 | `scan_token_security` | **Security 🆕** | free | 6-source risk score: honeypot, tax, holders, liquidity, DexScreener, DefiLlama |
-| 19 | `get_smart_money_signals` | **Security 🆕** | free | Velocity-based accumulation signals across all Uniswap V3 pools |
+| 15 | `search_pools_by_token` | Uniswap | free | Find all Uniswap V3 pools containing a specific token |
+| 16 | `get_pool_ohlc` | Uniswap | free | OHLC candlestick data for any pool (configurable days) |
+| 17 | `get_pool_fees` | Uniswap | free | Fee revenue and estimated APY for any pool |
+| 18 | `get_uniswap_protocol_stats` | Uniswap | free | Protocol-level TVL, volume, fee totals, pool count |
+| 19 | `get_swap_quote` | Swap | free | Best route via OKX DEX aggregator |
+| 20 | `get_yield_opportunities` | Intelligence | free | Yield farming above configurable APY threshold |
+| 21 | `find_arbitrage_opportunities` | Intelligence | 🔒 x402 | Price discrepancy scanner across all routes |
+| 22 | `scan_token_security` | Security | free | 6-source risk score: honeypot, tax, holders, liquidity, DexScreener, DefiLlama |
+| 23 | `get_smart_money_signals` | Security | free | Velocity-based accumulation signals across all Uniswap V3 pools |
+| 24 | `get_wallet_net_worth` | Onchain OS | free | Total portfolio value across all chains |
+| 25 | `get_token_detail` | Onchain OS | free | Rich token metadata: holders, FDV, socials, description |
+| 26 | `lookup_transaction` | Onchain OS | free | Decode any transaction: status, from/to, value, method |
+| 27 | `get_supported_tokens` | Onchain OS | free | All tokens supported by OKX DEX on X Layer |
+| 28 | `get_cross_chain_quote` | Onchain OS | free | Cross-chain bridge quote via OKX aggregator |
+| 29 | `check_address_security` | Security | free | OKX on-chain address risk: blacklist, phishing, contract risk |
+| 30 | `check_url_safety` | Security | free | Phishing/malicious URL detection via OKX |
+| 31 | `get_nft_holdings` | Onchain OS | free | NFT portfolio for any wallet on X Layer |
+| 32 | `get_yield_products` | Onchain OS | free | Available yield/farming products on X Layer |
+| 33 | `get_swap_execution` | Onchain OS | free | Full swap calldata for execution via OKX aggregator |
+| 34 | `get_address_info` | OKLink | free | Entity label, balance, tx count, first/last TX time |
+| 35 | `get_token_transfers` | OKLink | free | ERC-20 token transfer history for any wallet |
+| 36 | `get_block_list` | OKLink | free | Most recent blocks on X Layer |
+| 37 | `get_block_detail` | OKLink | free | Full block details: gas, validator, base fee, TX count |
+| 38 | `get_pending_transactions` | OKLink | free | Unconfirmed mempool transactions on X Layer |
+| 39 | `get_contract_info` | OKLink | free | Contract verification, creator, deploy TX, license |
+| 40 | `estimate_gas` | OKLink | free | Gas estimation for any transaction on X Layer |
+| 41 | `get_token_transfer_list` | OKLink | free | All recent transfers for a specific token contract |
+| 42 | `get_rich_list` | OKLink | free | Top holders (rich list) for OKB or any token |
+| 43 | `get_internal_transactions` | OKLink | free | Internal contract calls (traces) for any transaction |
 
 > 🔒 x402 = Premium tool requiring OKB micro-payment on X Layer. See `/api/x402/pricing`.
 
@@ -191,19 +217,29 @@ POST /mcp/call
 
 ## Onchain OS Integration
 
-### 7 Onchain OS Modules Used
+### 15 Onchain OS Modules Used
 
 | Module | Endpoint | What AXON Does With It |
 |--------|----------|------------------------|
-| **Wallet Asset API** | `GET /api/v5/wallet/asset/all-token-balances-by-address` | Full portfolio with USD values for any wallet |
-| **Token Price API** | `GET /api/v5/wallet/token/price` | Real-time price, 24h change, market cap |
-| **Transaction History** | `GET /api/v5/wallet/post-transaction/transactions-by-address` | Wallet activity for risk assessment |
-| **DeFi Positions** | `GET /api/v5/wallet/defi/investment/positions` | Active LP + staking + lending positions |
-| **DEX Aggregator** | `GET /api/v5/dex/aggregator/quote` | Best swap route across all X Layer DEXes |
-| **Chain Metadata** | `GET /api/v5/wallet/chain/supported-chains` | X Layer network info + metadata |
-| **Token Security** | `GET /api/v5/dex/security/token` | Honeypot detection, buy/sell tax, proxy/mint flags |
+| **Wallet Asset API** | `/api/v5/wallet/asset/all-token-balances-by-address` | Full portfolio with USD values for any wallet |
+| **Wallet Net Worth** | `/api/v5/wallet/asset/net-worth` | Total portfolio value across all chains |
+| **Token Price API** | `/api/v5/wallet/token/price` | Real-time price, 24h change, market cap |
+| **Token Detail** | `/api/v5/wallet/token/token-detail` | Rich token metadata: holders, FDV, socials |
+| **Transaction History** | `/api/v5/wallet/post-transaction/transactions-by-address` | Wallet activity for risk assessment |
+| **Transaction Decode** | `/api/v5/wallet/post-transaction/transaction-by-hash` | Decode any TX: method, from/to, value, status |
+| **DeFi Positions** | `/api/v5/wallet/defi/investment/positions` | Active LP + staking + lending positions |
+| **NFT Holdings** | `/api/v5/wallet/asset/nft-list` | NFT portfolio for any wallet on X Layer |
+| **Yield Products** | `/api/v5/wallet/defi/yield/product-list` | Available farming and yield opportunities |
+| **DEX Aggregator Quote** | `/api/v5/dex/aggregator/quote` | Best swap route across all X Layer DEXes |
+| **DEX Swap Execution** | `/api/v5/dex/aggregator/swap` | Full swap calldata for on-chain execution |
+| **Cross-Chain Bridge** | `/api/v5/dex/cross-chain/quote` | Bridge quotes across chains |
+| **All Tokens** | `/api/v5/dex/aggregator/all-tokens` | All tokens supported by OKX DEX on X Layer |
+| **Address Security** | `/api/v5/dex/security/address` | Blacklist check, phishing risk, address type |
+| **Token Security** | `/api/v5/dex/security/token` | Honeypot detection, buy/sell tax, proxy/mint flags |
+| **URL Safety** | `/api/v5/dex/security/url` | Phishing and malicious URL detection |
+| **Chain Metadata** | `/api/v5/wallet/chain/supported-chains` | X Layer network info + metadata |
 
-### Uniswap V3 Integration (5 Features)
+### Uniswap V3 Integration (8 Features)
 
 | Feature | Data Source | Implementation |
 |---------|-------------|----------------|
@@ -211,7 +247,10 @@ POST /mcp/call
 | **Token 7-day OHLC** | Subgraph `tokenDayData` | Open/high/low/close/volume for price trend analysis |
 | **Pool pair analytics** | Subgraph `poolDayData` | Fee APY estimation from volume/TVL ratios |
 | **Smart money velocity** | Subgraph `pools` | Volume/TVL ratio cross-analysis for accumulation signals |
-| **Swap routing** | OKX DEX aggregator | Routes through Uniswap V3 on X Layer |
+| **Pool search by token** | Subgraph `pools` | Find all pools containing a specific token address |
+| **Pool OHLC candles** | Subgraph `poolDayData` | Candlestick data for any pool over configurable days |
+| **Pool fee revenue** | Subgraph `poolDayData` | Fee earnings and estimated APY for any pool |
+| **Protocol stats** | Subgraph `factories` | Total protocol TVL, volume, fees, pool count |
 
 ---
 
@@ -323,7 +362,7 @@ GET /api/agent/activity
 
 ---
 
-## Frontend — 8 Pages
+## Frontend — 11 Pages
 
 | Page | Route | What It Does |
 |------|-------|-------------|
@@ -334,7 +373,10 @@ GET /api/agent/activity
 | **Agent Terminal** | `/agent` | Live WebSocket MCP tool executor |
 | **Ask AXON** | `/ask` | Natural language AI chat interface |
 | **Agent Activity** | `/activity` | Live autonomous agent event feed |
-| **Token Screener** | `/screener` 🆕 | 5-tab security scanner: Overview, Security, Holders, Liquidity, Smart Money |
+| **Token Screener** | `/screener` | 5-tab security scanner: Overview, Security, Holders, Liquidity, Smart Money |
+| **Explorer** | `/explorer` 🆕 | 4-tab OKLink explorer: address info, block detail, TX decode, contract verification + recent blocks feed |
+| **Security Hub** | `/security` 🆕 | Address blacklist check, URL phishing scanner, full token security scan |
+| **DeFi Hub** | `/defi` 🆕 | NFT portfolio, yield products, Uniswap V3 protocol stats (TVL / volume / fees) |
 
 ---
 
@@ -345,7 +387,7 @@ GET /api/agent/activity
 GET  /health                          → { status: "ok" }
 
 # ── MCP Protocol ─────────────────────────────────
-GET  /mcp/tools                       → List all 19 MCP tools
+GET  /mcp/tools                       → List all 43 MCP tools
 POST /mcp/call                        → Execute any MCP tool
 
 # ── Portfolio ─────────────────────────────────────
@@ -356,10 +398,24 @@ GET  /api/balance/{address}           → Native OKB balance
 GET  /api/transactions/{address}      → Transaction history
 GET  /api/defi/{address}              → DeFi positions
 
-# ── Security (NEW) ────────────────────────────────
-GET  /api/token/{address}/security    → Full 6-source security scan
-POST /api/security/batch              → Batch scan up to 10 tokens
-GET  /api/smart-money/signals         → Smart money accumulation signals
+# ── Security ──────────────────────────────────────
+GET  /api/token/{address}/security          → Full 6-source security scan
+POST /api/security/batch                    → Batch scan up to 10 tokens
+GET  /api/smart-money/signals               → Smart money accumulation signals
+GET  /api/address/{address}/security-check → OKX address blacklist / risk check
+POST /api/url/safety                        → Phishing URL detection
+
+# ── Explorer (OKLink) ─────────────────────────────
+GET  /api/address/{address}/info      → Entity label, balance, tx count
+GET  /api/blocks/latest               → Most recent blocks on X Layer
+GET  /api/block/{number}              → Full block detail: gas, validator, fees
+GET  /api/contract/{address}/info     → Contract verification + creator + deploy TX
+
+# ── DeFi Hub ──────────────────────────────────────
+GET  /api/address/{address}/nft       → NFT holdings for any wallet
+GET  /api/defi/yield-products         → Yield/farming products on X Layer
+GET  /api/uniswap/stats               → Protocol TVL, volume, fees, pool count
+GET  /api/uniswap/pool/{addr}/fees    → Pool fee revenue + estimated APY
 
 # ── Market ────────────────────────────────────────
 GET  /api/market                      → Full market snapshot
@@ -581,10 +637,10 @@ pytest tests/ -v -k "not chat"
 
 | Criterion (25% each) | AXON's Implementation |
 |---|---|
-| **Onchain OS / Uniswap integration & innovation** | 7 Onchain OS modules (incl. Token Security API) + Uniswap V3 subgraph + OKX DEX aggregator. 19 MCP tools production-tested on live endpoints. **Published to Onchain OS Plugin Store** ([PR #93](https://github.com/okx/plugin-store/pull/93)). Security scanner uses OKX's own `isHoneypot` and tax APIs directly. |
-| **X Layer ecosystem integration** | 100% focused on X Layer (Chain ID 196). Gas monitoring, block analytics, OKB pricing, Uniswap V3 liquidity, autonomous scanning, x402 payments with OKLink verification — all X Layer-native. |
-| **AI interactive experience** | Natural language "Ask AXON" chat routes 8+ intent types. Real-time WebSocket Agent Terminal. Autonomous 60s loop with security alerts. LLM-generated portfolio insights and security explanations via Groq LLaMA 3.3 70B. |
-| **Product completeness** | 8-page React frontend. FastAPI backend with 35+ REST endpoints. WebSocket agent terminal. 19 MCP tools. 6-source security scanner. Smart money signal feed. x402 payment gate with OKLink verification. Swagger docs. Deployed live on Vercel + Render. |
+| **Onchain OS / Uniswap integration & innovation** | 15 Onchain OS modules used: wallet assets, net worth, token detail, TX decode, DeFi positions, NFT holdings, yield products, swap execution, cross-chain bridge, address security, URL safety, token security, DEX tokens, price, chain metadata. Uniswap V3 subgraph for 8 features. **43 MCP tools** production-tested. **Published to Plugin Store** ([PR #93](https://github.com/okx/plugin-store/pull/93)). |
+| **X Layer ecosystem integration** | 100% focused on X Layer (Chain ID 196). OKLink explorer (address/block/contract/TX), gas monitoring, OKB pricing, Uniswap V3 liquidity, autonomous scanning every 5 min, x402 payments verified on-chain — all X Layer-native. Live mainnet TX proof: block #57163818. |
+| **AI interactive experience** | Natural language "Ask AXON" chat routes 8+ intent types. Real-time WebSocket Agent Terminal. Autonomous loop with security/yield/gas alerts. LLM-generated portfolio insights via Groq LLaMA 3.3 70B. 11-page React frontend covering explorer, security, DeFi, and trading. |
+| **Product completeness** | 11-page React frontend. FastAPI backend with 50+ REST endpoints. WebSocket agent terminal. 43 MCP tools across 5 source files. 6-source security scanner. OKLink explorer. Security Hub. DeFi Hub. NFT viewer. x402 payment gate. Swagger docs. Deployed live on Vercel + Render. |
 
 ### Special Prize Targets
 
@@ -602,13 +658,14 @@ pytest tests/ -v -k "not chat"
 
 **AXON is not a demo.** It is production infrastructure for the agentic era of X Layer:
 
-1. **19 MCP tools** — the most comprehensive AI agent skill on X Layer
-2. **6-source security scanner** — multi-source consensus eliminates false negatives. Uses OKX's own security API, DexScreener, DefiLlama, Uniswap V3, OKLink, and Onchain OS simultaneously
-3. **Real on-chain x402 verification** — not simulated. OKLink confirms every payment tx before execution. Replay protection prevents abuse
-4. **Natural language routing** — 8 intent patterns covering every major X Layer use case
-5. **Autonomous intelligence** — AXON monitors X Layer 24/7, surfaces signals proactively
-6. **Plugin Store published** — [PR #93](https://github.com/okx/plugin-store/pull/93) — installable by any AI agent on the planet in one command
-7. **Fully deployed** — frontend on Vercel, backend on Render, live right now — zero setup to evaluate
+1. **43 MCP tools** — the most comprehensive AI agent skill on X Layer, spanning portfolio, security, DeFi, explorer, swap, bridge, and yield
+2. **15 Onchain OS modules** — deeper integration than any other hackathon project: NFT, yield products, address security, URL safety, cross-chain bridge, swap execution, TX decode, net worth, and more
+3. **6-source security scanner** — multi-source consensus eliminates false negatives. Uses OKX's own security API, DexScreener, DefiLlama, Uniswap V3, OKLink, and Onchain OS simultaneously
+4. **Real on-chain x402 verification** — not simulated. OKLink confirms every payment tx before execution. Replay protection prevents abuse. Mainnet proof: block #57163818
+5. **11-page frontend** — Explorer, Security Hub, DeFi Hub, NFT viewer, Token Screener, natural language chat, agent terminal, autonomous activity feed
+6. **Natural language routing** — 8+ intent patterns covering every major X Layer use case
+7. **Plugin Store published** — [PR #93](https://github.com/okx/plugin-store/pull/93) — installable by any AI agent in one command
+8. **Fully deployed** — frontend on Vercel, backend on Render, live right now — zero setup to evaluate
 
 Every DeFi protocol on X Layer becomes AI-accessible through AXON. Every new token can be security-scanned. Every wallet can be analyzed. Every yield opportunity can be surfaced. That is the permanent intelligence layer X Layer deserves.
 

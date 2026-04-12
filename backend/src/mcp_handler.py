@@ -18,12 +18,32 @@ from .tools.onchain_os import (
     lookup_transaction,
     get_supported_tokens,
     get_cross_chain_quote,
+    check_address_security,
+    check_url_safety,
+    get_nft_holdings,
+    get_yield_products,
+    get_swap_execution,
+)
+from .tools.oklink import (
+    get_address_info,
+    get_token_transfers,
+    get_block_list,
+    get_block_detail,
+    get_pending_transactions,
+    get_contract_info,
+    estimate_gas,
+    get_token_transfer_list,
+    get_rich_list,
+    get_internal_transactions,
 )
 from .tools.uniswap import (
     get_uniswap_pool_data,
     get_uniswap_top_pools,
-    get_uniswap_swap_quote,
     get_uniswap_token_analytics,
+    search_pools_by_token,
+    get_pool_ohlc,
+    get_pool_fees,
+    get_uniswap_protocol_stats,
 )
 from .tools.xlayer import (
     get_gas_price,
@@ -292,6 +312,144 @@ MCP_TOOLS = [
             },
         },
     },
+    # ── Security (OKX) ──────────────────────────────────────────────────────────
+    {
+        "name": "check_address_security",
+        "description": "Check if a wallet address is blacklisted or malicious via OKX DEX security API",
+        "inputSchema": {"type": "object", "properties": {"address": {"type": "string"}}, "required": ["address"]},
+    },
+    {
+        "name": "check_url_safety",
+        "description": "Check if a URL is a phishing or scam site via OKX DEX security API",
+        "inputSchema": {"type": "object", "properties": {"url": {"type": "string"}}, "required": ["url"]},
+    },
+    # ── NFT & DeFi Products ─────────────────────────────────────────────────────
+    {
+        "name": "get_nft_holdings",
+        "description": "Get NFT portfolio for a wallet on X Layer via OKX Onchain OS",
+        "inputSchema": {"type": "object", "properties": {"address": {"type": "string"}, "chain_id": {"type": "string", "default": "196"}}, "required": ["address"]},
+    },
+    {
+        "name": "get_yield_products",
+        "description": "List available DeFi yield/earning products on X Layer via OKX Onchain OS",
+        "inputSchema": {"type": "object", "properties": {"chain_id": {"type": "string", "default": "196"}}},
+    },
+    {
+        "name": "get_swap_execution",
+        "description": "Get signed calldata to execute a swap on X Layer via OKX DEX aggregator — ready to broadcast",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "from_token": {"type": "string"}, "to_token": {"type": "string"},
+                "amount": {"type": "string"}, "user_wallet": {"type": "string"},
+                "chain_id": {"type": "string", "default": "196"}, "slippage": {"type": "string", "default": "0.5"},
+            },
+            "required": ["from_token", "to_token", "amount", "user_wallet"],
+        },
+    },
+    # ── OKLink Explorer ─────────────────────────────────────────────────────────
+    {
+        "name": "get_address_info",
+        "description": "Get address entity label, balance, tx count, first/last tx via OKLink explorer",
+        "inputSchema": {"type": "object", "properties": {"address": {"type": "string"}}, "required": ["address"]},
+    },
+    {
+        "name": "get_token_transfers",
+        "description": "Get ERC-20 token transfer history for a wallet on X Layer via OKLink",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "address": {"type": "string"}, "token_contract": {"type": "string", "default": ""},
+                "limit": {"type": "integer", "default": 20},
+            },
+            "required": ["address"],
+        },
+    },
+    {
+        "name": "get_block_list",
+        "description": "Get most recent blocks on X Layer via OKLink explorer",
+        "inputSchema": {"type": "object", "properties": {"limit": {"type": "integer", "default": 10}}},
+    },
+    {
+        "name": "get_block_detail",
+        "description": "Get full details for a specific block on X Layer via OKLink",
+        "inputSchema": {"type": "object", "properties": {"block_number": {"type": "string"}}, "required": ["block_number"]},
+    },
+    {
+        "name": "get_pending_transactions",
+        "description": "Get unconfirmed/pending transactions in the X Layer mempool via OKLink",
+        "inputSchema": {
+            "type": "object",
+            "properties": {"address": {"type": "string", "default": ""}, "limit": {"type": "integer", "default": 20}},
+        },
+    },
+    {
+        "name": "get_contract_info",
+        "description": "Get contract verification status, creator, deploy TX, compiler version via OKLink",
+        "inputSchema": {"type": "object", "properties": {"contract_address": {"type": "string"}}, "required": ["contract_address"]},
+    },
+    {
+        "name": "estimate_gas",
+        "description": "Estimate gas cost for a transaction on X Layer via OKLink",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "to": {"type": "string"}, "data": {"type": "string", "default": "0x"}, "value": {"type": "string", "default": "0"},
+            },
+            "required": ["to"],
+        },
+    },
+    {
+        "name": "get_token_transfer_list",
+        "description": "Get all recent transfers for a token contract on X Layer via OKLink",
+        "inputSchema": {
+            "type": "object",
+            "properties": {"token_contract": {"type": "string"}, "limit": {"type": "integer", "default": 20}},
+            "required": ["token_contract"],
+        },
+    },
+    {
+        "name": "get_rich_list",
+        "description": "Get top holders (rich list) for OKB or any token on X Layer via OKLink",
+        "inputSchema": {
+            "type": "object",
+            "properties": {"token_contract": {"type": "string", "default": ""}, "limit": {"type": "integer", "default": 20}},
+        },
+    },
+    {
+        "name": "get_internal_transactions",
+        "description": "Get internal contract calls (traces) for a transaction on X Layer via OKLink",
+        "inputSchema": {"type": "object", "properties": {"tx_hash": {"type": "string"}}, "required": ["tx_hash"]},
+    },
+    # ── Uniswap V3 Extended ─────────────────────────────────────────────────────
+    {
+        "name": "search_pools_by_token",
+        "description": "Find all Uniswap V3 pools containing a specific token on X Layer",
+        "inputSchema": {
+            "type": "object",
+            "properties": {"token_address": {"type": "string"}, "limit": {"type": "integer", "default": 10}},
+            "required": ["token_address"],
+        },
+    },
+    {
+        "name": "get_pool_ohlc",
+        "description": "Get daily OHLC candle data for a Uniswap V3 pool on X Layer",
+        "inputSchema": {
+            "type": "object",
+            "properties": {"pool_address": {"type": "string"}, "days": {"type": "integer", "default": 7}},
+            "required": ["pool_address"],
+        },
+    },
+    {
+        "name": "get_pool_fees",
+        "description": "Get cumulative fee revenue and estimated APY for a Uniswap V3 pool on X Layer",
+        "inputSchema": {"type": "object", "properties": {"pool_address": {"type": "string"}}, "required": ["pool_address"]},
+    },
+    {
+        "name": "get_uniswap_protocol_stats",
+        "description": "Get overall Uniswap V3 protocol statistics on X Layer: pool count, total volume, TVL, fees",
+        "inputSchema": {"type": "object", "properties": {}},
+    },
     {
         "name": "get_cross_chain_quote",
         "description": "Get a cross-chain bridge quote via OKX DEX — e.g. ETH on Ethereum to OKB on X Layer",
@@ -352,18 +510,52 @@ async def dispatch_tool(tool_name: str, args: Dict[str, Any]) -> Any:
         "scan_token_security": lambda: scan_token_security(args["token_address"]),
         "get_smart_money_signals": lambda: get_smart_money_signals(args.get("limit", 10)),
         "get_wallet_net_worth": lambda: get_wallet_net_worth(args["address"]),
-        "get_token_detail": lambda: get_token_detail(
-            args["token_address"], args.get("chain_id", "196")
-        ),
-        "lookup_transaction": lambda: lookup_transaction(
-            args["tx_hash"], args.get("chain_id", "196")
-        ),
+        "get_token_detail": lambda: get_token_detail(args["token_address"], args.get("chain_id", "196")),
+        "lookup_transaction": lambda: lookup_transaction(args["tx_hash"], args.get("chain_id", "196")),
         "get_supported_tokens": lambda: get_supported_tokens(args.get("chain_id", "196")),
         "get_cross_chain_quote": lambda: get_cross_chain_quote(
             args["from_chain_id"], args.get("to_chain_id", "196"),
             args["from_token"], args["to_token"], args["amount"],
             args["user_wallet"], args.get("slippage", "0.5"),
         ),
+        # Security
+        "check_address_security": lambda: check_address_security(args["address"]),
+        "check_url_safety": lambda: check_url_safety(args["url"]),
+        # NFT & DeFi
+        "get_nft_holdings": lambda: get_nft_holdings(args["address"], args.get("chain_id", "196")),
+        "get_yield_products": lambda: get_yield_products(args.get("chain_id", "196")),
+        "get_swap_execution": lambda: get_swap_execution(
+            args["from_token"], args["to_token"], args["amount"],
+            args["user_wallet"], args.get("chain_id", "196"), args.get("slippage", "0.5"),
+        ),
+        # OKLink Explorer
+        "get_address_info": lambda: get_address_info(args["address"]),
+        "get_token_transfers": lambda: get_token_transfers(
+            args["address"], args.get("token_contract", ""), args.get("limit", 20)
+        ),
+        "get_block_list": lambda: get_block_list(args.get("limit", 10)),
+        "get_block_detail": lambda: get_block_detail(args["block_number"]),
+        "get_pending_transactions": lambda: get_pending_transactions(
+            args.get("address", ""), args.get("limit", 20)
+        ),
+        "get_contract_info": lambda: get_contract_info(args["contract_address"]),
+        "estimate_gas": lambda: estimate_gas(
+            args["to"], args.get("data", "0x"), args.get("value", "0")
+        ),
+        "get_token_transfer_list": lambda: get_token_transfer_list(
+            args["token_contract"], args.get("limit", 20)
+        ),
+        "get_rich_list": lambda: get_rich_list(
+            args.get("token_contract", ""), args.get("limit", 20)
+        ),
+        "get_internal_transactions": lambda: get_internal_transactions(args["tx_hash"]),
+        # Uniswap V3 Extended
+        "search_pools_by_token": lambda: search_pools_by_token(
+            args["token_address"], args.get("limit", 10)
+        ),
+        "get_pool_ohlc": lambda: get_pool_ohlc(args["pool_address"], args.get("days", 7)),
+        "get_pool_fees": lambda: get_pool_fees(args["pool_address"]),
+        "get_uniswap_protocol_stats": lambda: get_uniswap_protocol_stats(),
     }
 
     handler = dispatch.get(tool_name)

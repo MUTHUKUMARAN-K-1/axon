@@ -214,6 +214,204 @@ async def get_uniswap_swap_quote(
     return result
 
 
+async def search_pools_by_token(token_address: str, limit: int = 10) -> dict:
+    """
+    MCP Tool: search_pools_by_token
+    Find all Uniswap V3 pools containing a specific token on X Layer.
+    """
+    query = """
+    {
+      pools(
+        where: { token0_contains_nocase: "%s" }
+        first: %d
+        orderBy: totalValueLockedUSD
+        orderDirection: desc
+      ) {
+        id
+        token0 { symbol }
+        token1 { symbol }
+        feeTier
+        totalValueLockedUSD
+        volumeUSD
+      }
+    }
+    """ % (token_address.lower(), limit)
+    try:
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            r = await client.post(UNISWAP_GRAPH_XLAYER, json={"query": query},
+                                  headers={"Content-Type": "application/json"})
+            data = r.json()
+        pools = data.get("data", {}).get("pools", [])
+        return {
+            "success": True,
+            "token": token_address,
+            "chain": "X Layer",
+            "pool_count": len(pools),
+            "pools": [
+                {
+                    "address": p["id"],
+                    "pair": f"{p['token0']['symbol']}/{p['token1']['symbol']}",
+                    "fee_pct": int(p.get("feeTier", 0)) / 10000,
+                    "tvl_usd": round(float(p.get("totalValueLockedUSD", 0) or 0), 2),
+                    "volume_usd": round(float(p.get("volumeUSD", 0) or 0), 2),
+                }
+                for p in pools
+            ],
+        }
+    except Exception as e:
+        logger.error(f"search_pools_by_token error: {e}")
+        return {"success": False, "error": str(e), "pools": []}
+
+
+async def get_pool_ohlc(pool_address: str, days: int = 7) -> dict:
+    """
+    MCP Tool: get_pool_ohlc
+    Returns OHLC candle data for a Uniswap V3 pool on X Layer.
+    """
+    query = """
+    {
+      pool(id: "%s") {
+        token0 { symbol }
+        token1 { symbol }
+        poolDayData(first: %d orderBy: date orderDirection: desc) {
+          date
+          open
+          high
+          low
+          close
+          volumeUSD
+          tvlUSD
+          feesUSD
+          txCount
+        }
+      }
+    }
+    """ % (pool_address.lower(), min(days, 30))
+    try:
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            r = await client.post(UNISWAP_GRAPH_XLAYER, json={"query": query},
+                                  headers={"Content-Type": "application/json"})
+            data = r.json()
+        pool = data.get("data", {}).get("pool")
+        if not pool:
+            return {"success": False, "error": "Pool not found"}
+        candles = pool.get("poolDayData", [])
+        return {
+            "success": True,
+            "pool": pool_address,
+            "pair": f"{pool['token0']['symbol']}/{pool['token1']['symbol']}",
+            "chain": "X Layer",
+            "candle_count": len(candles),
+            "candles": [
+                {
+                    "date": c.get("date"),
+                    "open": c.get("open", "0"),
+                    "high": c.get("high", "0"),
+                    "low": c.get("low", "0"),
+                    "close": c.get("close", "0"),
+                    "volume_usd": round(float(c.get("volumeUSD", 0) or 0), 2),
+                    "tvl_usd": round(float(c.get("tvlUSD", 0) or 0), 2),
+                    "fees_usd": round(float(c.get("feesUSD", 0) or 0), 2),
+                    "tx_count": int(c.get("txCount", 0) or 0),
+                }
+                for c in candles
+            ],
+        }
+    except Exception as e:
+        logger.error(f"get_pool_ohlc error: {e}")
+        return {"success": False, "error": str(e), "candles": []}
+
+
+async def get_pool_fees(pool_address: str) -> dict:
+    """
+    MCP Tool: get_pool_fees
+    Returns cumulative fee revenue analytics for a Uniswap V3 pool on X Layer.
+    """
+    query = """
+    {
+      pool(id: "%s") {
+        token0 { symbol }
+        token1 { symbol }
+        feeTier
+        totalValueLockedUSD
+        volumeUSD
+        feesUSD
+        txCount
+        poolDayData(first: 7 orderBy: date orderDirection: desc) {
+          date feesUSD volumeUSD
+        }
+      }
+    }
+    """ % pool_address.lower()
+    try:
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            r = await client.post(UNISWAP_GRAPH_XLAYER, json={"query": query},
+                                  headers={"Content-Type": "application/json"})
+            data = r.json()
+        pool = data.get("data", {}).get("pool")
+        if not pool:
+            return {"success": False, "error": "Pool not found"}
+        daily = pool.get("poolDayData", [])
+        fees_7d = sum(float(d.get("feesUSD", 0) or 0) for d in daily)
+        tvl = float(pool.get("totalValueLockedUSD", 0) or 0)
+        fee_apy = (fees_7d / max(tvl, 1)) * 52 * 100 if tvl > 0 else 0
+        return {
+            "success": True,
+            "pool": pool_address,
+            "pair": f"{pool['token0']['symbol']}/{pool['token1']['symbol']}",
+            "fee_tier_pct": int(pool.get("feeTier", 0)) / 10000,
+            "total_fees_usd": round(float(pool.get("feesUSD", 0) or 0), 2),
+            "fees_7d_usd": round(fees_7d, 2),
+            "estimated_fee_apy_pct": round(fee_apy, 2),
+            "tvl_usd": round(tvl, 2),
+            "volume_total_usd": round(float(pool.get("volumeUSD", 0) or 0), 2),
+            "chain": "X Layer",
+        }
+    except Exception as e:
+        logger.error(f"get_pool_fees error: {e}")
+        return {"success": False, "error": str(e)}
+
+
+async def get_uniswap_protocol_stats() -> dict:
+    """
+    MCP Tool: get_uniswap_protocol_stats
+    Returns overall Uniswap V3 protocol statistics on X Layer.
+    """
+    query = """
+    {
+      factories(first: 1) {
+        poolCount
+        txCount
+        totalVolumeUSD
+        totalFeesUSD
+        totalValueLockedUSD
+      }
+    }
+    """
+    try:
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            r = await client.post(UNISWAP_GRAPH_XLAYER, json={"query": query},
+                                  headers={"Content-Type": "application/json"})
+            data = r.json()
+        factories = data.get("data", {}).get("factories", [])
+        if not factories:
+            return {"success": False, "error": "No factory data"}
+        f = factories[0]
+        return {
+            "success": True,
+            "chain": "X Layer",
+            "protocol": "Uniswap V3",
+            "pool_count": int(f.get("poolCount", 0)),
+            "tx_count": int(f.get("txCount", 0)),
+            "total_volume_usd": round(float(f.get("totalVolumeUSD", 0) or 0), 2),
+            "total_fees_usd": round(float(f.get("totalFeesUSD", 0) or 0), 2),
+            "tvl_usd": round(float(f.get("totalValueLockedUSD", 0) or 0), 2),
+        }
+    except Exception as e:
+        logger.error(f"get_uniswap_protocol_stats error: {e}")
+        return {"success": False, "error": str(e)}
+
+
 async def get_uniswap_token_analytics(token_address: str) -> dict:
     """
     MCP Tool: get_uniswap_token_analytics

@@ -338,6 +338,211 @@ async def get_xlayer_stats() -> dict:
         return {"success": False, "error": str(e)}
 
 
+async def check_address_security(address: str) -> dict:
+    """
+    MCP Tool: check_address_security
+    Checks if an address is blacklisted/malicious via OKX DEX security API.
+    """
+    try:
+        path = f"/api/v5/dex/security/address?chainId=196&address={address}"
+        import os, hashlib, hmac, base64
+        from datetime import datetime, timezone
+        api_key = os.getenv("OKX_API_KEY", "")
+        secret  = os.getenv("OKX_SECRET_KEY", "")
+        passphrase = os.getenv("OKX_PASSPHRASE", "")
+        ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+        sig = base64.b64encode(
+            hmac.new(secret.encode(), f"{ts}GET{path}".encode(), hashlib.sha256).digest()
+        ).decode() if secret else ""
+        headers = {"OK-ACCESS-KEY": api_key, "OK-ACCESS-SIGN": sig,
+                   "OK-ACCESS-TIMESTAMP": ts, "OK-ACCESS-PASSPHRASE": passphrase} if api_key else {}
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            r = await client.get(f"https://web3.okx.com{path}", headers=headers)
+            data = r.json()
+        if data.get("code") == "0" and data.get("data"):
+            d = data["data"][0]
+            return {
+                "success": True,
+                "address": address,
+                "is_blacklisted": d.get("isBlacklist", False),
+                "risk_level": d.get("riskLevel", ""),
+                "risk_type": d.get("riskType", []),
+                "tags": d.get("addressTag", []),
+            }
+        return {"success": False, "error": data.get("msg", "API error")}
+    except Exception as e:
+        logger.error(f"check_address_security error: {e}")
+        return {"success": False, "error": str(e)}
+
+
+async def check_url_safety(url: str) -> dict:
+    """
+    MCP Tool: check_url_safety
+    Checks if a URL is a phishing/scam site via OKX DEX security API.
+    """
+    try:
+        import urllib.parse
+        encoded = urllib.parse.quote(url, safe="")
+        path = f"/api/v5/dex/security/url?url={encoded}"
+        import os, hashlib, hmac, base64
+        from datetime import datetime, timezone
+        api_key = os.getenv("OKX_API_KEY", "")
+        secret  = os.getenv("OKX_SECRET_KEY", "")
+        passphrase = os.getenv("OKX_PASSPHRASE", "")
+        ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+        sig = base64.b64encode(
+            hmac.new(secret.encode(), f"{ts}GET{path}".encode(), hashlib.sha256).digest()
+        ).decode() if secret else ""
+        headers = {"OK-ACCESS-KEY": api_key, "OK-ACCESS-SIGN": sig,
+                   "OK-ACCESS-TIMESTAMP": ts, "OK-ACCESS-PASSPHRASE": passphrase} if api_key else {}
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            r = await client.get(f"https://web3.okx.com{path}", headers=headers)
+            data = r.json()
+        if data.get("code") == "0" and data.get("data"):
+            d = data["data"][0]
+            return {
+                "success": True,
+                "url": url,
+                "is_phishing": d.get("isPhishing", False),
+                "is_malicious": d.get("isMalicious", False),
+                "risk_type": d.get("riskType", ""),
+                "verdict": "DANGEROUS" if d.get("isPhishing") or d.get("isMalicious") else "SAFE",
+            }
+        return {"success": False, "error": data.get("msg", "API error")}
+    except Exception as e:
+        logger.error(f"check_url_safety error: {e}")
+        return {"success": False, "error": str(e)}
+
+
+async def get_nft_holdings(address: str, chain_id: str = XLAYER_CHAIN_ID) -> dict:
+    """
+    MCP Tool: get_nft_holdings
+    Returns NFT holdings for a wallet via OKX Onchain OS.
+    """
+    try:
+        path = "/api/v5/wallet/asset/nft-list"
+        headers = _get_okx_headers(path)
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            r = await client.get(
+                f"{OKX_BASE}{path}",
+                params={"address": address, "chainIndex": chain_id},
+                headers=headers or None,
+            )
+            data = r.json()
+        if data.get("code") == "0" and data.get("data"):
+            nfts = data["data"][0].get("nftList", [])
+            return {
+                "success": True,
+                "address": address,
+                "chain": "X Layer",
+                "nft_count": len(nfts),
+                "nfts": [
+                    {
+                        "collection": n.get("collectionName", ""),
+                        "token_id": n.get("tokenId", ""),
+                        "name": n.get("nftName", ""),
+                        "contract": n.get("tokenContractAddress", ""),
+                        "standard": n.get("tokenType", ""),
+                        "image": n.get("nftImageUrl", ""),
+                        "floor_price_usd": n.get("floorPrice", "0"),
+                    }
+                    for n in nfts
+                ],
+            }
+        return {"success": False, "error": data.get("msg", "API error"), "nfts": [], "nft_count": 0}
+    except Exception as e:
+        logger.error(f"get_nft_holdings error: {e}")
+        return {"success": False, "error": str(e), "nfts": [], "nft_count": 0}
+
+
+async def get_yield_products(chain_id: str = XLAYER_CHAIN_ID) -> dict:
+    """
+    MCP Tool: get_yield_products
+    Returns available DeFi yield products on X Layer via OKX Onchain OS.
+    """
+    try:
+        path = "/api/v5/wallet/defi/yield/product-list"
+        headers = _get_okx_headers(path)
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            r = await client.get(
+                f"{OKX_BASE}{path}",
+                params={"chainId": chain_id},
+                headers=headers or None,
+            )
+            data = r.json()
+        if data.get("code") == "0" and data.get("data"):
+            products = data.get("data", [])
+            return {
+                "success": True,
+                "chain": "X Layer",
+                "product_count": len(products),
+                "products": [
+                    {
+                        "protocol": p.get("projectName", ""),
+                        "type": p.get("productType", ""),
+                        "token_pair": p.get("investToken", ""),
+                        "apy": p.get("apy", "0"),
+                        "tvl_usd": p.get("tvl", "0"),
+                        "min_investment": p.get("minInvestAmount", "0"),
+                        "risk_level": p.get("riskLevel", ""),
+                        "lock_period_days": p.get("lockPeriod", 0),
+                    }
+                    for p in products
+                ],
+            }
+        return {"success": False, "error": data.get("msg", "API error"), "products": []}
+    except Exception as e:
+        logger.error(f"get_yield_products error: {e}")
+        return {"success": False, "error": str(e), "products": []}
+
+
+async def get_swap_execution(
+    from_token: str, to_token: str, amount: str,
+    user_wallet: str, chain_id: str = XLAYER_CHAIN_ID, slippage: str = "0.5"
+) -> dict:
+    """
+    MCP Tool: get_swap_execution
+    Returns actual on-chain calldata to execute a swap via OKX DEX aggregator on X Layer.
+    """
+    try:
+        path = "/api/v5/dex/aggregator/swap"
+        params = {
+            "chainId": chain_id,
+            "fromTokenAddress": from_token,
+            "toTokenAddress": to_token,
+            "amount": amount,
+            "userWalletAddress": user_wallet,
+            "slippage": slippage,
+        }
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            r = await client.get(f"{OKX_BASE}{path}", params=params)
+            data = r.json()
+        if data.get("code") == "0" and data.get("data"):
+            d = data["data"][0]
+            tx = d.get("tx", {})
+            return {
+                "success": True,
+                "chain": "X Layer",
+                "from_token": from_token,
+                "to_token": to_token,
+                "from_amount": amount,
+                "to_amount": d.get("routerResult", {}).get("toTokenAmount", "0"),
+                "price_impact": d.get("routerResult", {}).get("priceImpactPercentage", "0"),
+                "tx": {
+                    "to": tx.get("to", ""),
+                    "data": tx.get("data", ""),
+                    "value": tx.get("value", "0"),
+                    "gas": tx.get("gas", "0"),
+                    "gas_price": tx.get("gasPrice", "0"),
+                },
+                "note": "Sign and broadcast this tx to execute the swap",
+            }
+        return {"success": False, "error": data.get("msg", "Swap data unavailable")}
+    except Exception as e:
+        logger.error(f"get_swap_execution error: {e}")
+        return {"success": False, "error": str(e)}
+
+
 async def get_wallet_net_worth(address: str) -> dict:
     """
     MCP Tool: get_wallet_net_worth

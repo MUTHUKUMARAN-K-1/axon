@@ -625,6 +625,81 @@ pytest tests/ -v -k "not chat"
 
 ---
 
+## Deployment Address
+
+| Role | Address | Network |
+|------|---------|---------|
+| **Agentic Wallet** (x402 payment recipient) | `0xDb82c0d91E057E05600C8F8dc836bEb41da6df14` | X Layer Mainnet (Chain ID 196) |
+
+Explorer: [OKLink](https://www.oklink.com/xlayer/address/0xDb82c0d91E057E05600C8F8dc836bEb41da6df14) · Mainnet proof TX: [#57163818](https://www.oklink.com/x-layer/tx/0x14a9bd9d2cbbb80be3373dd8b414104d107466247c48a2bd3c8ceb8eee58360b)
+
+---
+
+## Working Mechanics
+
+### How AXON processes a request end-to-end
+
+```
+1. AI agent (Claude / GPT / open-source) calls POST /mcp/call
+   with tool_name + arguments
+
+2. MCP Router checks if tool is premium (x402 gate):
+   └─ Premium → extract X-PAYMENT tx hash from header
+              → query OKLink to confirm tx on X Layer (status, recipient, amount)
+              → reject with HTTP 402 if invalid; consume tx if valid
+   └─ Free    → skip payment check, proceed immediately
+
+3. Tool dispatcher routes to one of 5 source modules:
+   ├─ onchain_os.py   → OKX Onchain OS REST API (15 modules)
+   ├─ oklink.py       → OKLink Explorer API (10 functions)
+   ├─ uniswap.py      → Uniswap V3 The Graph subgraph (8 queries)
+   ├─ xlayer.py       → X Layer RPC direct (gas, blocks, balances)
+   └─ security_agent  → 6 parallel sources (honeypot, holders, pairs, yield, TVL)
+
+4. Result returned as structured JSON to the AI agent
+
+5. [Optional] Agent calls POST /api/chat with plain English question
+   → Groq LLaMA 3.3 70B routes to correct tool + formats natural language answer
+
+6. Autonomous background loop (every 5 min):
+   → Scans gas, yield opportunities, block health
+   → Logs signals to /api/agent/activity feed
+   → Frontend /activity page shows live alerts
+```
+
+### Natural Language Intent Routing
+
+| User says | AXON calls |
+|-----------|-----------|
+| "is this token safe / honeypot / rug" | `scan_token_security` |
+| "analyze wallet / risk score" | `analyze_wallet` (x402) |
+| "gas price / gwei / fee" | `get_gas_price` |
+| "yield / APY / farming" | `get_yield_opportunities` |
+| "smart money / whale / accumulation" | `get_smart_money_signals` |
+| "swap / best route / quote" | `get_swap_quote` |
+| "pool / TVL / Uniswap" | `get_uniswap_top_pools` |
+| "arbitrage / spread / MEV" | `find_arbitrage_opportunities` (x402) |
+| "bridge / cross-chain" | `get_cross_chain_quote` |
+| "NFT / holdings" | `get_nft_holdings` |
+
+---
+
+## X Layer Ecosystem Positioning
+
+AXON fills a gap that no other project addresses: **onchain intelligence infrastructure for AI agents on X Layer.**
+
+| Layer | What existed | What AXON adds |
+|-------|-------------|----------------|
+| **Data** | Raw RPC + OKLink explorer (human UI) | Machine-readable MCP interface for all X Layer data |
+| **Security** | No multi-source token scanner on X Layer | 6-source scanner with honeypot, holder, and pair age analysis |
+| **AI agents** | No standardized way to query X Layer | 43 MCP tools compatible with Claude, GPT, any open-source agent |
+| **Payments** | No agentic payment primitive on X Layer | x402 gate with OKB, verified on-chain, replay-protected |
+| **Skills** | No reusable X Layer skill in Plugin Store | First X Layer native skill — installable in one command |
+
+AXON is not a DeFi app that uses AI as a gimmick. It is **the intelligence API layer** that lets any AI agent — today or in the future — participate in the X Layer ecosystem without needing to understand RPC, ABIs, or API authentication. Every DeFi protocol on X Layer becomes AI-accessible through AXON.
+
+---
+
 ## Team
 
 | Name | Role |
@@ -644,13 +719,15 @@ pytest tests/ -v -k "not chat"
 
 ### Special Prize Targets
 
-| Prize | AXON's Case |
-|---|---|
-| **Best x402 application** | x402 payment gate with full OKLink on-chain verification + replay protection. Premium tools: `analyze_wallet`, `compare_wallets`, `find_arbitrage_opportunities`. Every rejection returns structured reason + payment instructions. |
-| **Best MCP integration** | 19 MCP tools covering portfolio, market, DEX, swap, security, smart money, AI analysis + natural language chat routing. Plugin Store skill installable in one command. Compatible with Claude, GPT, any open-source agent. |
-| **Best security application** | 6-source token security scanner: OKX honeypot API + Onchain OS risk control + DexScreener pair age + DefiLlama APY sanity + Uniswap V3 TVL + OKLink holder concentration. Autonomous agent monitors X Layer for threats. |
-| **Best data analyst** | Onchain OS data → deterministic risk scoring + LLM narrative + 7-day Uniswap OHLC + yield APY estimation + smart money velocity signals + holder concentration analysis. |
-| **Most innovative (Skills Arena)** | First X Layer-native security intelligence skill for AI agents. Wraps 19 live MCP tools including the only multi-source token security scanner on X Layer. One-command install via Plugin Store. |
+| Prize | Arena | AXON's Case |
+|---|---|---|
+| **Best x402 application** | X Layer | x402 payment gate with full OKLink on-chain verification + replay protection. Three premium tools: `analyze_wallet`, `compare_wallets`, `find_arbitrage_opportunities`. Every rejection returns structured 402 reason + payment instructions. Mainnet proof: block #57163818. |
+| **Most active agent** | X Layer | Autonomous agent loop calls Onchain OS APIs every 5 min (gas, yield, block health). UptimeRobot keeps it alive 24/7. All activity logged to `/api/agent/activity`. |
+| **Best MCP integration** | X Layer | 43 MCP tools across portfolio, market, OKLink explorer, swap, bridge, NFT, security, smart money, AI analysis + natural language routing. Plugin Store skill installable in one command. Compatible with Claude, GPT, any open-source agent. |
+| **Best economy loop** | X Layer | Agents earn yield intelligence → pay OKB via x402 for premium analysis → use AI insights to optimize positions → repeat. Full earn-pay-earn cycle with on-chain OKB payments and Onchain OS yield data. |
+| **Best Uniswap integration** | Skills | 8 Uniswap V3 subgraph features: top pools, token OHLC, pool fees/APY, protocol stats, pool search by token, smart money velocity signals, yield opportunities, arbitrage scanning. |
+| **Best data analyst** | Skills | 15 Onchain OS modules → deterministic risk scoring + LLM narrative + 7-day Uniswap OHLC + yield APY + smart money velocity + holder concentration + OKLink block/contract/address data. |
+| **Most innovative** | Skills | First X Layer-native AI intelligence layer. 43 MCP tools, 6-source security scanner (only multi-source token scanner on X Layer), one-command install, x402 agentic payment gate — all on a single reusable skill. |
 
 ---
 

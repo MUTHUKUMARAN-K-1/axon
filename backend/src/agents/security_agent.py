@@ -478,7 +478,7 @@ async def scan_token_security(token_address: str) -> dict:
     total_score = round(raw_a * 0.35 + raw_b * 0.25 + raw_c * 0.20 + raw_e * 0.10 + raw_f * 0.10)
     total_score = max(0, min(total_score, 100))
 
-    return {
+    result: dict = {
         "success": True,
         "token_address": token_address,
         "risk_score": total_score,
@@ -544,6 +544,29 @@ async def scan_token_security(token_address: str) -> dict:
         "defillama_apy": defillama_apy,
         "dexscreener_url": dex_data.get("url", "") if dex_data else "",
     }
+
+    # ── Fire-and-forget: publish verdict to VerdictLedger on X Layer ─────────
+    # Non-blocking — scan always returns even if on-chain publish fails.
+    try:
+        from .verdict_ledger import publish_verdict
+        asyncio.create_task(
+            publish_verdict(
+                token_address=token_address,
+                risk_score=total_score,
+                flag_count=len(risks),
+                full_report={
+                    "token": token_address,
+                    "risk_score": total_score,
+                    "risk_label": _risk_label(total_score),
+                    "flags": risks,
+                    "scoring": result.get("scoring", {}),
+                },
+            )
+        )
+    except Exception as _e:
+        logger.debug(f"VerdictLedger task schedule failed: {_e}")
+
+    return result
 
 
 # ─── Smart Money Signals ──────────────────────────────────────────────────────

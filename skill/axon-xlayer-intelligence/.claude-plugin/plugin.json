@@ -1,7 +1,7 @@
 {
   "name": "axon-xlayer-intelligence",
-  "description": "X Layer DeFi intelligence skill — query gas, blocks, Uniswap V3 pools, wallet portfolios, swap quotes, yield opportunities, and arbitrage signals on X Layer (Chain ID 196) via 17 MCP tools",
-  "version": "1.0.0",
+  "description": "AXON — X Layer neural intelligence layer. 43 MCP tools: portfolio analysis, 6-source token security scanning, OKLink explorer, NFT holdings, yield products, Uniswap V3 analytics, cross-chain bridge, address/URL security check, swap routing, and x402 premium gates on X Layer (Chain ID 196).",
+  "version": "2.0.0",
   "author": {
     "name": "MUTHUKUMARAN K",
     "email": ""
@@ -9,6 +9,17 @@
   "homepage": "https://axon-six-amber.vercel.app",
   "repository": "https://github.com/MUTHUKUMARAN-K-1/axon",
   "license": "MIT",
+  "install": {
+    "claude_code": "claude mcp add axon-xlayer --transport http https://axon-onld.onrender.com",
+    "plugin_store": "npx skills add okx/plugin-store --skill axon-xlayer-intelligence"
+  },
+  "endpoints": {
+    "api": "https://axon-onld.onrender.com",
+    "mcp_tools": "https://axon-onld.onrender.com/mcp/tools",
+    "mcp_call": "https://axon-onld.onrender.com/mcp/call",
+    "docs": "https://axon-onld.onrender.com/docs",
+    "dashboard": "https://axon-six-amber.vercel.app"
+  },
   "keywords": [
     "xlayer",
     "okb",
@@ -20,6 +31,12 @@
     "portfolio",
     "x402",
     "gas",
-    "onchain"
+    "onchain",
+    "security",
+    "nft",
+    "explorer",
+    "oklink",
+    "bridge",
+    "intelligence"
   ]
 }

@@ -109,60 +109,76 @@ async def _llm_analyze(prompt: str, system: str = "") -> str:
 
 
 def _calculate_risk_score(portfolio: dict, txs: dict) -> dict:
-    """Deterministic risk scoring — no LLM needed."""
-    score = 50  # start neutral
+    """
+    Deterministic wallet health scoring — higher score = healthier wallet.
+    Starts at 0, adds points for positive signals, caps at 100.
+    Score ≥ 70 → LOW risk  |  40–69 → MEDIUM risk  |  < 40 → HIGH risk.
+    """
+    score = 0
     flags = []
 
     tokens = portfolio.get("tokens", [])
     total_usd = portfolio.get("total_usd_value", 0) or 0
 
-    # Concentration risk
-    if tokens and total_usd > 0:
-        try:
-            top_token_value = max(
-                (float(t.get("value_usd", 0)) for t in tokens), default=0
-            )
-            concentration = top_token_value / total_usd
-            if concentration > 0.9:
-                score -= 20
-                flags.append("HIGH_CONCENTRATION: >90% in single token")
-            elif concentration > 0.7:
-                score -= 10
-                flags.append("MODERATE_CONCENTRATION: >70% in single token")
-            else:
-                score += 10
-        except (ValueError, ZeroDivisionError):
-            pass
+    # Base: wallet has any value at all
+    if total_usd > 0:
+        score += 15
+
+    # Portfolio size tiers
+    if total_usd > 10_000:
+        score += 20
+        flags.append("LARGE_PORTFOLIO: >$10k total value")
+    elif total_usd > 1_000:
+        score += 12
+    elif total_usd > 100:
+        score += 6
+    elif total_usd < 10 and total_usd > 0:
+        flags.append("DUST_PORTFOLIO: <$10 total value")
 
     # Diversification bonus
     if len(tokens) >= 5:
-        score += 10
+        score += 15
         flags.append("DIVERSIFIED: 5+ tokens held")
-    elif len(tokens) == 1:
-        score -= 10
+    elif len(tokens) >= 3:
+        score += 8
+    elif len(tokens) == 1 and total_usd > 0:
+        score += 3  # single token but still has value
 
-    # Transaction activity
+    # Concentration health — reward balanced portfolios
+    if tokens and total_usd > 0:
+        try:
+            top_val = max(
+                (float(t.get("value_usd", 0)) for t in tokens), default=0
+            )
+            concentration = top_val / total_usd
+            if concentration < 0.5:
+                score += 15
+                flags.append("BALANCED: no single token >50% of portfolio")
+            elif concentration < 0.7:
+                score += 8
+            elif concentration > 0.9:
+                flags.append("HIGH_CONCENTRATION: >90% in single token")
+        except (ValueError, ZeroDivisionError):
+            pass
+
+    # Transaction activity — active wallets are healthier
     tx_count = txs.get("transaction_count", 0) or 0
     if tx_count > 50:
-        score += 5
+        score += 15
         flags.append("ACTIVE_WALLET: 50+ recent transactions")
-    elif tx_count == 0:
-        score -= 10
+    elif tx_count > 10:
+        score += 8
+    elif tx_count > 0:
+        score += 3
+    else:
         flags.append("DORMANT_WALLET: no recent transactions")
-
-    # Portfolio size
-    if total_usd > 10000:
-        score += 10
-    elif total_usd < 10:
-        score -= 15
-        flags.append("DUST_PORTFOLIO: <$10 total value")
 
     score = max(0, min(100, score))
 
-    if score >= 75:
+    if score >= 70:
         risk_label = "LOW"
         color = "green"
-    elif score >= 50:
+    elif score >= 40:
         risk_label = "MEDIUM"
         color = "yellow"
     else:
@@ -174,6 +190,7 @@ def _calculate_risk_score(portfolio: dict, txs: dict) -> dict:
         "risk_level": risk_label,
         "color": color,
         "flags": flags,
+        "note": "Score 0–100: higher = healthier. ≥70 LOW, 40–69 MEDIUM, <40 HIGH.",
     }
 
 

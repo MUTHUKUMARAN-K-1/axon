@@ -115,35 +115,66 @@ No explanation, no markdown, just JSON."""
 
 
 def _keyword_fallback(question: str) -> tuple[str, dict]:
-    """Keyword-based fallback when LLM router is unavailable."""
+    """
+    Keyword-based fallback router when LLM is unavailable.
+    Priority: security/buy intent → NFT → balance → tx → price → pool → wallet analysis.
+    Key fix: 'should I buy 0x...' now correctly routes to scan_token_security
+    instead of falling through to analyze_wallet.
+    """
     import re
     q = question.lower()
     addr = re.search(r'0x[a-fA-F0-9]{40}', question)
+
     if addr:
         address = addr.group(0)
-        if any(w in q for w in ["scan", "safe", "honeypot", "rug", "scam", "security", "risky", "dangerous"]):
+
+        # Security / buy intent — MUST be checked first, before generic wallet fallback
+        if any(w in q for w in [
+            "scan", "safe", "honeypot", "rug", "scam", "security", "risky",
+            "dangerous", "buy", "invest", "should i", "is it safe", "is this",
+            "risk", "legit", "trust", "fraud", "verify", "check token",
+        ]):
+            # Address security check vs token security scan
+            if any(w in q for w in ["address", "wallet", "blacklist", "phishing"]):
+                return "check_address_security", {"address": address}
             return "scan_token_security", {"token_address": address}
-        if any(w in q for w in ["nft", "collectible"]):
+
+        if any(w in q for w in ["nft", "collectible", "nfts"]):
             return "get_nft_holdings", {"address": address}
-        if any(w in q for w in ["balance", "okb", "how much"]):
+
+        if any(w in q for w in ["balance", "how much okb", "native"]):
             return "get_native_balance", {"address": address}
-        if any(w in q for w in ["transaction", "tx", "history", "activity"]):
+
+        if any(w in q for w in ["transaction", "tx", "history", "activity", "sent", "received"]):
             return "get_transaction_history", {"address": address, "limit": 10}
-        if any(w in q for w in ["price"]):
+
+        if any(w in q for w in ["price", "cost", "worth", "how much is"]):
             return "get_token_price", {"token_address": address, "chain_id": "196"}
-        return "analyze_wallet", {"address": address, "include_ai_insights": True}
-    if any(w in q for w in ["gas", "gwei", "fee"]):
+
+        if any(w in q for w in ["pool", "uniswap", "tvl", "liquidity", "ohlc", "chart"]):
+            return "get_uniswap_top_pools", {"limit": 5}
+
+        if any(w in q for w in ["analyze", "portfolio", "holding", "wallet", "net worth"]):
+            return "analyze_wallet", {"address": address, "include_ai_insights": True}
+
+        # Default for bare address: token price (most common query type)
+        return "get_token_price", {"token_address": address, "chain_id": "196"}
+
+    # No address in question
+    if any(w in q for w in ["gas", "gwei", "fee", "transaction cost"]):
         return "get_gas_price", {}
-    if any(w in q for w in ["block", "latest block"]):
+    if any(w in q for w in ["block", "latest block", "network health"]):
         return "get_block_info", {"block": "latest"}
-    if any(w in q for w in ["yield", "apy", "farm", "earn"]):
+    if any(w in q for w in ["yield", "apy", "farm", "earn", "lp reward"]):
         return "get_yield_opportunities", {"min_apy": 5.0}
-    if any(w in q for w in ["pool", "tvl", "uniswap"]):
+    if any(w in q for w in ["pool", "tvl", "uniswap", "liquidity"]):
         return "get_uniswap_top_pools", {"limit": 5}
-    if any(w in q for w in ["whale", "smart money", "signal", "accumulation"]):
+    if any(w in q for w in ["whale", "smart money", "signal", "accumulation", "hot token"]):
         return "get_smart_money_signals", {"limit": 10}
-    if any(w in q for w in ["bridge", "cross-chain"]):
+    if any(w in q for w in ["bridge", "cross-chain", "cross chain"]):
         return "get_cross_chain_quote", {}
+    if any(w in q for w in ["arbitrage", "arb", "spread", "mev"]):
+        return "find_arbitrage_opportunities", {}
     return "get_market_overview", {}
 
 

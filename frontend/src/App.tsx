@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast'
 import { Brain, LayoutDashboard, Wallet, BarChart3, ArrowLeftRight, Terminal,
   Zap, MessageSquare, Activity, Shield, Search, Sprout
 } from 'lucide-react'
+import WalletButton from './components/WalletButton'
 import Dashboard from './pages/Dashboard'
 import Portfolio from './pages/Portfolio'
 import Analytics from './pages/Analytics'
@@ -151,6 +152,10 @@ export default function App() {
 
           {/* Footer */}
           <div style={{ padding: '16px', borderTop: '1px solid var(--border-default)' }}>
+            {/* Wallet Connect */}
+            <div style={{ marginBottom: 10 }}>
+              <WalletButton />
+            </div>
             {/* x402 badge */}
             <div style={{
               display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8,

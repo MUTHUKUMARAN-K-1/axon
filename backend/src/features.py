@@ -44,7 +44,6 @@ async def start_agent_loop():
 
     from .tools.xlayer import get_gas_price, get_block_info
     from .agents.market_agent import get_yield_opportunities
-    from .agents.security_agent import get_smart_money_signals
 
     cycle = 0
     while True:
@@ -52,11 +51,10 @@ async def start_agent_loop():
             cycle += 1
             _log_activity("info", f"Agent cycle #{cycle} — scanning X Layer...", {"cycle": cycle})
 
-            gas, block, yields, signals = await asyncio.gather(
+            gas, block, yields = await asyncio.gather(
                 get_gas_price(),
                 get_block_info("latest"),
                 get_yield_opportunities(min_apy=8.0),
-                get_smart_money_signals(limit=5),
                 return_exceptions=True,
             )
 
@@ -83,18 +81,11 @@ async def start_agent_loop():
                 else:
                     _log_activity("info", "No high-yield opportunities above 8% APY this cycle", {})
 
-            if isinstance(signals, dict) and signals.get("signals_found", 0) > 0:
-                top = signals["signals"][0]
-                _log_activity("security",
-                    f"Smart money signal: {top.get('pair','?')} — {top.get('signal_label','?')} "
-                    f"velocity {top.get('velocity_ratio','?')}x",
-                    top)
-
         except Exception as e:
             _log_activity("alert", f"Agent loop error: {str(e)[:80]}", {})
             logger.error(f"Agent loop error: {e}")
 
-        await asyncio.sleep(60)
+        await asyncio.sleep(300)  # 5 min — reduce memory pressure on free tier
 
 
 # ─── Intent Router ─────────────────────────────────────────────────────────────

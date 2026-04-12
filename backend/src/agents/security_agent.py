@@ -137,13 +137,21 @@ async def _dexscreener_pairs(token_address: str, chain: str = "xlayer") -> list:
 # ─── Source D: DefiLlama ──────────────────────────────────────────────────────
 
 async def _defillama_pools(symbol: str, chain: str = "X Layer") -> Optional[dict]:
-    """Fetch DefiLlama yield pools — cache for 10 min. Find best APY for symbol."""
+    """Fetch DefiLlama yield pools — cache for 10 min. Filter to X Layer Uniswap only."""
     global _llama_cache
     if time.time() - _llama_cache["ts"] > _LLAMA_TTL:
         try:
             async with httpx.AsyncClient(timeout=20.0) as client:
                 r = await client.get("https://yields.llama.fi/pools")
-                _llama_cache = {"pools": r.json().get("data", []), "ts": time.time()}
+                all_pools = r.json().get("data", [])
+                # Filter immediately — only keep X Layer Uniswap pools to limit memory
+                filtered = [
+                    p for p in all_pools
+                    if p.get("chain", "").lower() == chain.lower()
+                    and "uniswap" in p.get("project", "").lower()
+                ]
+                _llama_cache = {"pools": filtered, "ts": time.time()}
+                del all_pools  # release full dataset immediately
         except Exception:
             pass
 
@@ -151,8 +159,6 @@ async def _defillama_pools(symbol: str, chain: str = "X Layer") -> Optional[dict
     matches = [
         p for p in pools
         if symbol.lower() in p.get("symbol", "").lower()
-        and p.get("chain", "").lower() == chain.lower()
-        and "uniswap" in p.get("project", "").lower()
     ]
     if not matches:
         return None

@@ -55,6 +55,7 @@ from .tools.xlayer import (
 from .agents.portfolio_agent import analyze_wallet, compare_wallets
 from .agents.market_agent import get_market_overview, find_arbitrage_opportunities, get_yield_opportunities
 from .agents.security_agent import scan_token_security, get_smart_money_signals
+from .agents.verdict_ledger import get_onchain_verdict, get_total_verdicts
 
 logger = logging.getLogger("axon.mcp")
 
@@ -266,6 +267,26 @@ MCP_TOOLS = [
                 "limit": {"type": "integer", "default": 10, "description": "Max signals to return"},
             },
         },
+    },
+    {
+        "name": "get_onchain_verdict",
+        "description": (
+            "Query the AxonVerdictLedger smart contract on X Layer for the latest "
+            "published security verdict for any token. Returns risk score, flag count, "
+            "timestamp, and data hash — all verifiable on-chain."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "token_address": {"type": "string", "description": "Token contract address to look up"},
+            },
+            "required": ["token_address"],
+        },
+    },
+    {
+        "name": "get_total_verdicts",
+        "description": "Return the total number of unique tokens AXON has published security verdicts for on X Layer.",
+        "inputSchema": {"type": "object", "properties": {}},
     },
     {
         "name": "get_wallet_net_worth",
@@ -509,6 +530,8 @@ async def dispatch_tool(tool_name: str, args: Dict[str, Any]) -> Any:
         ),
         "scan_token_security": lambda: scan_token_security(args["token_address"]),
         "get_smart_money_signals": lambda: get_smart_money_signals(args.get("limit", 10)),
+        "get_onchain_verdict": lambda: get_onchain_verdict(args["token_address"]),
+        "get_total_verdicts": lambda: get_total_verdicts(),
         "get_wallet_net_worth": lambda: get_wallet_net_worth(args["address"]),
         "get_token_detail": lambda: get_token_detail(args["token_address"], args.get("chain_id", "196")),
         "lookup_transaction": lambda: lookup_transaction(args["tx_hash"], args.get("chain_id", "196")),

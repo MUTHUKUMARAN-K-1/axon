@@ -14,6 +14,7 @@ Risk score 0-100 (higher = more dangerous).
 
 import asyncio
 import logging
+import os
 import time
 from typing import Optional
 
@@ -22,6 +23,7 @@ import httpx
 from ..tools.xlayer import get_oklink_address_summary
 from ..tools.uniswap import get_uniswap_token_analytics, get_uniswap_top_pools
 from ..tools.onchain_os import get_token_price, _get_okx_headers
+from .verdict_ledger import publish_verdict as _publish_verdict, CONTRACT_ADDRESS as _LEDGER_ADDRESS
 
 logger = logging.getLogger("axon.agents.security")
 
@@ -545,12 +547,11 @@ async def scan_token_security(token_address: str) -> dict:
         "dexscreener_url": dex_data.get("url", "") if dex_data else "",
     }
 
-    # ── Fire-and-forget: publish verdict to VerdictLedger on X Layer ─────────
+    # ── Fire-and-forget: publish verdict to AxonVerdictLedger on X Layer ──────
     # Non-blocking — scan always returns even if on-chain publish fails.
     try:
-        from .verdict_ledger import publish_verdict
         asyncio.create_task(
-            publish_verdict(
+            _publish_verdict(
                 token_address=token_address,
                 risk_score=total_score,
                 flag_count=len(risks),
@@ -565,6 +566,15 @@ async def scan_token_security(token_address: str) -> dict:
         )
     except Exception as _e:
         logger.debug(f"VerdictLedger task schedule failed: {_e}")
+
+    # Annotate result with VerdictLedger metadata so callers / the frontend
+    # know where to find the on-chain record.
+    if _LEDGER_ADDRESS:
+        result["verdict_ledger"] = {
+            "contract": _LEDGER_ADDRESS,
+            "chain_id": 196,
+            "explorer": f"https://www.oklink.com/xlayer/address/{_LEDGER_ADDRESS}",
+        }
 
     return result
 

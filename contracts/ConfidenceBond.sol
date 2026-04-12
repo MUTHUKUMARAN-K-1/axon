@@ -117,7 +117,7 @@ contract AxonConfidenceBond {
 
         // The new verdict must be issued AFTER the bond was locked (not a stale read)
         require(verdictTs >= b.lockedAt, "verdict predates bond");
-        require(currentRisk >= DANGER_THRESHOLD, "token still safe — challenge rejected");
+        require(currentRisk >= DANGER_THRESHOLD, "token still safe - challenge rejected");
 
         // Challenger wins — transfer bond
         uint256 payout = b.amount;

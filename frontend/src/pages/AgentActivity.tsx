@@ -50,16 +50,31 @@ function EventCard({ event, index }: { event: AgentEvent; index: number }) {
           <div style={{
             marginTop: 6, display: 'flex', gap: 8, flexWrap: 'wrap',
           }}>
-            {Object.entries(event.data).slice(0, 3).map(([k, v]) => (
-              <span key={k} style={{
-                fontSize: 10, fontFamily: "'JetBrains Mono', monospace",
-                color: cfg.color, background: cfg.bg,
-                border: `1px solid ${cfg.color}25`,
-                borderRadius: 4, padding: '2px 6px',
-              }}>
-                {k}: {typeof v === 'number' ? v.toLocaleString() : String(v)}
-              </span>
-            ))}
+            {Object.entries(event.data).slice(0, 4).map(([k, v]) => {
+              let display: string
+              if (v === null || v === undefined) display = '—'
+              else if (typeof v === 'number') display = v.toLocaleString()
+              else if (typeof v === 'object') {
+                // flatten one level: show key fields if available, else compact JSON
+                const obj = v as Record<string, unknown>
+                if (obj.type && obj.from) display = `${obj.type} ${String(obj.from).slice(0,8)}…`
+                else if (obj.amount_usdt) display = `$${obj.amount_usdt} USDT`
+                else display = JSON.stringify(v).slice(0, 40)
+              }
+              else display = String(v)
+              return (
+                <span key={k} style={{
+                  fontSize: 10, fontFamily: "'JetBrains Mono', monospace",
+                  color: cfg.color, background: cfg.bg,
+                  border: `1px solid ${cfg.color}25`,
+                  borderRadius: 4, padding: '2px 6px',
+                  maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap', display: 'inline-block',
+                }}>
+                  {k}: {display}
+                </span>
+              )
+            })}
           </div>
         )}
       </div>

@@ -59,26 +59,9 @@ async def _okx_token_security(token_address: str, chain_id: str = "196") -> dict
     Uses web3.okx.com endpoint (same auth as onchain_os.py but different base URL).
     Falls back to empty dict on any error.
     """
-    import os, hashlib, hmac, base64
-    from datetime import datetime, timezone
-
-    api_key    = os.getenv("OKX_API_KEY", "")
-    secret     = os.getenv("OKX_SECRET_KEY", "")
-    passphrase = os.getenv("OKX_PASSPHRASE", "")
-
     path = f"/api/v5/dex/security/token?chainId={chain_id}&tokenContractAddress={token_address}"
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
-    msg = f"{timestamp}GET{path}"
-    sig = base64.b64encode(
-        hmac.new(secret.encode(), msg.encode(), hashlib.sha256).digest()
-    ).decode() if secret else ""
-
-    headers = {
-        "OK-ACCESS-KEY": api_key,
-        "OK-ACCESS-SIGN": sig,
-        "OK-ACCESS-TIMESTAMP": timestamp,
-        "OK-ACCESS-PASSPHRASE": passphrase,
-    } if api_key else {}
+    # Reuse shared OKX HMAC header builder — single source of truth for auth
+    headers = _get_okx_headers(path)
 
     try:
         async with httpx.AsyncClient(timeout=12.0) as client:

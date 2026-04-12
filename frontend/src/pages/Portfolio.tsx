@@ -1,8 +1,7 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import {
-  Search, Wallet, TrendingUp, Shield, Brain,
-  AlertCircle, ChevronRight, Sparkles, BarChart2,
-  ArrowUpRight, ArrowDownRight, Loader2
+  Search, Wallet, Brain,
+  AlertCircle, ChevronRight, Sparkles, Loader2
 } from 'lucide-react'
 import { analyzeWallet } from '../services/api'
 import toast from 'react-hot-toast'

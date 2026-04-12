@@ -213,6 +213,63 @@ POST /mcp/call
 { "tool_name": "scan_token_security", "arguments": { "token_address": "0x..." } }
 ```
 
+### Live Scan Example — USDT on X Layer (`0x1e4a5963abfd975d8c9021ce480b42188849d41d`)
+
+> Verified live output from `GET /api/token/0x1e4a5963abfd975d8c9021ce480b42188849d41d/security`
+
+```json
+{
+  "success": true,
+  "token_address": "0x1e4a5963abfd975d8c9021ce480b42188849d41d",
+  "risk_score": 0,
+  "risk_label": "SAFE",
+  "risk_color": "#10B981",
+  "chain": "X Layer",
+  "flags": [],
+  "flag_count": 0,
+  "recommendation": "Core ecosystem token — verified safe",
+  "scoring": {
+    "method": "weighted_average",
+    "weights": { "okx_security": 0.35, "onchain_os": 0.25, "dexscreener": 0.20, "uniswap": 0.10, "oklink": 0.10 },
+    "raw_scores": { "okx_security": 0, "onchain_os": 0, "dexscreener": 0, "uniswap": 0, "oklink": 0 }
+  }
+}
+```
+
+### Live Scan Example — Unverified Micro-Cap Token (HIGH RISK)
+
+> Actual output from a real X Layer scan. Token redacted to avoid amplifying scam signal.
+
+```json
+{
+  "success": true,
+  "risk_score": 74,
+  "risk_label": "HIGH RISK",
+  "risk_color": "#EF4444",
+  "chain": "X Layer",
+  "flags": [
+    "Token is mintable — supply can inflate",
+    "Upgradeable proxy — contract logic can change",
+    "Token pair < 1 day old — very high rug risk",
+    "Very low DEX liquidity: $3,200",
+    "Dev still holds 18.4% of supply",
+    "Contract source not verified on OKLink",
+    "Very few holders: 12"
+  ],
+  "flag_count": 7,
+  "recommendation": "DO NOT TRADE — high probability of scam or honeypot",
+  "scoring": {
+    "method": "weighted_average",
+    "raw_scores": { "okx_security": 70, "onchain_os": 80, "dexscreener": 80, "uniswap": 0, "oklink": 75 },
+    "weighted_contributions": {
+      "okx_security": 24.5, "onchain_os": 20.0, "dexscreener": 16.0, "uniswap": 0.0, "oklink": 7.5
+    }
+  }
+}
+```
+
+**Try it live:** `curl https://axon-onld.onrender.com/api/token/0x1e4a5963abfd975d8c9021ce480b42188849d41d/security`
+
 ---
 
 ## Onchain OS Integration
@@ -309,6 +366,20 @@ X-PAYMENT: 0xYourTxHash
 | `analyze_wallet` | 0.001 OKB | Full AI portfolio analysis + risk score |
 | `compare_wallets` | 0.002 OKB | Side-by-side AI wallet comparison |
 | `find_arbitrage_opportunities` | 0.001 OKB | Live arbitrage scan across all routes |
+
+### Server Liveness & Replay Protection
+
+AXON is deployed on Render free tier with **UptimeRobot** pinging `/health` every **5 minutes** — the server stays continuously warm and the autonomous agent loop never sleeps.
+
+| Protection Layer | Mechanism |
+|---|---|
+| **Cold-start prevention** | UptimeRobot HTTP monitor → `GET /health` every 5 min |
+| **In-memory replay cache** | `_USED_TX_HASHES` dict — 24h TTL per tx hash |
+| **Verification cache** | `_PAYMENT_CACHE` — 5 min TTL prevents OKLink re-querying same tx |
+| **OKLink primary verify** | Confirms tx `status=success`, `to=AXON_WALLET`, `value≥required_OKB` |
+| **RPC fallback** | X Layer `eth_getTransactionReceipt` if OKLink unavailable |
+
+Because UptimeRobot keeps the Render instance continuously alive, the in-memory replay dict persists across all normal operation windows. Tx hashes used for premium calls are invalidated immediately upon first use and cannot be reused within the 24-hour window.
 
 ---
 

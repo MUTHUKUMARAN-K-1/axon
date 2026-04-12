@@ -1,18 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import {
   Activity, Zap, Layers, TrendingUp, BarChart3,
-  ArrowUpRight, Clock, RefreshCw, ExternalLink,
+  Clock, RefreshCw, ExternalLink,
   Globe, Database, ArrowRight
 } from 'lucide-react'
 import { getMarketOverview, getTopPools } from '../services/api'
-
-interface Pool {
-  pair: string
-  tvl_usd: number
-  volume_usd: number
-  fee_pct: number
-  address: string
-}
+import type { MarketOverview, Pool } from '../types/api'
+import { formatTokenPrice } from '../utils/format'
 
 interface StatCardProps {
   label: string
@@ -72,7 +66,7 @@ function SkeletonStat() {
 }
 
 export default function Dashboard() {
-  const [market, setMarket] = useState<any>(null)
+  const [market, setMarket] = useState<MarketOverview | null>(null)
   const [pools, setPools] = useState<Pool[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -81,12 +75,9 @@ export default function Dashboard() {
   const fetchData = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true)
     try {
-      const [m, p] = await Promise.all([
-        getMarketOverview() as Promise<any>,
-        getTopPools(8) as Promise<any>,
-      ])
+      const [m, p] = await Promise.all([getMarketOverview(), getTopPools(8)])
       setMarket(m)
-      setPools(p.pools || [])
+      setPools(p.pools ?? [])
       setLastUpdated(new Date())
     } catch (e) {
       console.error('Dashboard fetch error:', e)
@@ -102,8 +93,8 @@ export default function Dashboard() {
     return () => clearInterval(interval)
   }, [])
 
-  const net = market?.network || {}
-  const prices = market?.key_prices || {}
+  const net = market?.network ?? {}
+  const prices = market?.key_prices ?? {}
 
   const STATS = [
     {
@@ -135,7 +126,7 @@ export default function Dashboard() {
     },
     {
       label: 'OKB Price',
-      value: prices.OKB ? `$${parseFloat(prices.OKB).toFixed(2)}` : '—',
+      value: prices.OKB ? formatTokenPrice(prices.OKB, 2) : '—',
       sub: 'Native token',
       icon: <TrendingUp size={20} color="white" />,
       gradient: 'linear-gradient(135deg, rgba(16,185,129,0.07) 0%, rgba(16,185,129,0.03) 100%)',

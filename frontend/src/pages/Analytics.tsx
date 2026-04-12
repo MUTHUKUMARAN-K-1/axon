@@ -1,18 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { TrendingUp, BarChart3, Search, Loader2, Sparkles, AlertCircle } from 'lucide-react'
 import { getYieldOpportunities, getTokenAnalytics } from '../services/api'
+import type { TokenAnalyticsResponse, YieldOpportunity } from '../types/api'
+import { formatTokenPrice, formatUsd, isEvmAddress } from '../utils/format'
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from 'recharts'
-
-interface YieldOpp {
-  pair: string
-  tvl_usd: number
-  estimated_fee_apy_pct: number
-  protocol: string
-  risk: string
-  address: string
-}
 
 const RISK_BADGE: Record<string, string> = {
   Low: 'badge-success',
@@ -20,7 +13,17 @@ const RISK_BADGE: Record<string, string> = {
   High: 'badge-danger',
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+interface ChartTooltipPayload {
+  value?: number
+}
+
+interface ChartTooltipProps {
+  active?: boolean
+  payload?: ChartTooltipPayload[]
+  label?: number
+}
+
+const CustomTooltip = ({ active, payload, label }: ChartTooltipProps) => {
   if (!active || !payload?.length) return null
   return (
     <div style={{
@@ -29,31 +32,31 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       boxShadow: 'var(--shadow-md)',
     }}>
       <p style={{ color: 'var(--text-muted)', marginBottom: 4 }}>
-        {new Date(label * 1000).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
+        {label ? new Date(label * 1000).toLocaleDateString('en', { month: 'short', day: 'numeric' }) : '—'}
       </p>
       <p style={{ fontWeight: 600, color: 'var(--axon-primary)' }}>
-        ${Number(payload[0].value).toFixed(6)}
+        ${Number(payload[0]?.value ?? 0).toFixed(6)}
       </p>
     </div>
   )
 }
 
 export default function Analytics() {
-  const [yields, setYields] = useState<YieldOpp[]>([])
+  const [yields, setYields] = useState<YieldOpportunity[]>([])
   const [tokenAddr, setTokenAddr] = useState('')
-  const [tokenData, setTokenData] = useState<any>(null)
+  const [tokenData, setTokenData] = useState<TokenAnalyticsResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [tokenLoading, setTokenLoading] = useState(false)
 
   useEffect(() => {
-    getYieldOpportunities(2.0).then((d: any) => {
-      setYields(d.opportunities || [])
+    getYieldOpportunities(2.0).then((d) => {
+      setYields(d.opportunities ?? [])
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [])
 
   const searchToken = async () => {
-    if (!tokenAddr.match(/^0x[a-fA-F0-9]{40}$/)) return
+    if (!isEvmAddress(tokenAddr)) return
     setTokenLoading(true)
     setTokenData(null)
     try {
@@ -68,6 +71,7 @@ export default function Analytics() {
 
   const priceChange = tokenData?.price_change_7d_pct || 0
   const isPositive = priceChange >= 0
+  const chartData = tokenData?.ohlc_7d ? [...tokenData.ohlc_7d].reverse() : []
 
   return (
     <div style={{ padding: '32px', maxWidth: 1100 }}>
@@ -134,8 +138,8 @@ export default function Analytics() {
               {[
                 { label: 'Symbol', value: tokenData.symbol, accent: true },
                 { label: '7d Change', value: `${priceChange >= 0 ? '+' : ''}${priceChange}%`, positive: isPositive },
-                { label: 'Current Price', value: `$${parseFloat(tokenData.price_now_usd || 0).toFixed(6)}` },
-                { label: 'TVL', value: `$${(tokenData.tvl_usd || 0).toLocaleString()}` },
+                { label: 'Current Price', value: formatTokenPrice(tokenData.price_now_usd) },
+                { label: 'TVL', value: formatUsd(tokenData.tvl_usd || 0) },
               ].map(({ label, value, accent, positive }) => (
                 <div key={label} style={{
                   background: accent ? 'var(--axon-primary-light)' : 'var(--surface-bg)',
@@ -156,13 +160,13 @@ export default function Analytics() {
             </div>
 
             {/* Area Chart */}
-            {tokenData.ohlc_7d?.length > 0 && (
+            {chartData.length > 0 && (
               <div>
                 <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   7-Day Price History
                 </p>
                 <ResponsiveContainer width="100%" height={200}>
-                  <AreaChart data={[...tokenData.ohlc_7d].reverse()} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
+                  <AreaChart data={chartData} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
                     <defs>
                       <linearGradient id="priceGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#5B3CF5" stopOpacity={0.15} />

@@ -345,17 +345,7 @@ async def check_address_security(address: str) -> dict:
     """
     try:
         path = f"/api/v5/dex/security/address?chainId=196&address={address}"
-        import os, hashlib, hmac, base64
-        from datetime import datetime, timezone
-        api_key = os.getenv("OKX_API_KEY", "")
-        secret  = os.getenv("OKX_SECRET_KEY", "")
-        passphrase = os.getenv("OKX_PASSPHRASE", "")
-        ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
-        sig = base64.b64encode(
-            hmac.new(secret.encode(), f"{ts}GET{path}".encode(), hashlib.sha256).digest()
-        ).decode() if secret else ""
-        headers = {"OK-ACCESS-KEY": api_key, "OK-ACCESS-SIGN": sig,
-                   "OK-ACCESS-TIMESTAMP": ts, "OK-ACCESS-PASSPHRASE": passphrase} if api_key else {}
+        headers = _get_okx_headers(path)  # shared HMAC auth
         async with httpx.AsyncClient(timeout=10.0) as client:
             r = await client.get(f"https://web3.okx.com{path}", headers=headers)
             data = r.json()
@@ -384,17 +374,7 @@ async def check_url_safety(url: str) -> dict:
         import urllib.parse
         encoded = urllib.parse.quote(url, safe="")
         path = f"/api/v5/dex/security/url?url={encoded}"
-        import os, hashlib, hmac, base64
-        from datetime import datetime, timezone
-        api_key = os.getenv("OKX_API_KEY", "")
-        secret  = os.getenv("OKX_SECRET_KEY", "")
-        passphrase = os.getenv("OKX_PASSPHRASE", "")
-        ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
-        sig = base64.b64encode(
-            hmac.new(secret.encode(), f"{ts}GET{path}".encode(), hashlib.sha256).digest()
-        ).decode() if secret else ""
-        headers = {"OK-ACCESS-KEY": api_key, "OK-ACCESS-SIGN": sig,
-                   "OK-ACCESS-TIMESTAMP": ts, "OK-ACCESS-PASSPHRASE": passphrase} if api_key else {}
+        headers = _get_okx_headers(path)  # shared HMAC auth
         async with httpx.AsyncClient(timeout=10.0) as client:
             r = await client.get(f"https://web3.okx.com{path}", headers=headers)
             data = r.json()

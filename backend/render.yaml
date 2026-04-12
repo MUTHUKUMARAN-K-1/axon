@@ -9,6 +9,8 @@ services:
     envVars:
       - key: PORT
         value: 3000
+      - key: AXON_CORS_ORIGINS
+        value: https://axon-six-amber.vercel.app
       - key: XLAYER_RPC_URL
         value: https://rpc.xlayer.tech
       - key: AXON_AGENT_WALLET

@@ -1,10 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, type ReactNode } from 'react'
 import {
   Terminal, Send, Zap, ChevronRight, Cpu,
   CheckCircle2, XCircle, Info, Loader2, Activity
 } from 'lucide-react'
 import { callMcpTool, listMcpTools } from '../services/api'
-import toast from 'react-hot-toast'
 
 interface LogEntry {
   id: number
@@ -21,7 +20,7 @@ const QUICK_COMMANDS = [
   { label: 'Yield Opps', tool: 'get_yield_opportunities', args: { min_apy: 5 }, icon: CheckCircle2 },
 ]
 
-const LOG_STYLES: Record<LogEntry['type'], { color: string; icon: React.ReactNode; prefix: string }> = {
+const LOG_STYLES: Record<LogEntry['type'], { color: string; icon: ReactNode; prefix: string }> = {
   input:  { color: '#5B3CF5', icon: <ChevronRight size={11} />, prefix: '' },
   status: { color: '#8B87A8', icon: <Loader2 size={11} style={{ animation: 'spin 1s linear infinite' }} />, prefix: '' },
   result: { color: '#10B981', icon: <CheckCircle2 size={11} />, prefix: '' },

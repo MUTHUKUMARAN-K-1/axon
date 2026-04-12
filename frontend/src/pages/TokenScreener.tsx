@@ -1,39 +1,11 @@
 import React, { useState } from 'react'
 import { Shield, AlertTriangle, CheckCircle, XCircle, TrendingUp,
   Users, Droplets, FileCode, Activity, Search, Loader, Zap, ChevronRight } from 'lucide-react'
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+import { getSmartMoneySignals, getTokenSecurityScan } from '../services/api'
+import type { SecurityScanResponse, SmartMoneySignal } from '../types/api'
+import { isEvmAddress } from '../utils/format'
 
 type Tab = 'overview' | 'security' | 'holders' | 'liquidity' | 'signals'
-
-interface SecurityScan {
-  success: boolean
-  token_address: string
-  risk_score: number
-  risk_label: string
-  risk_color: string
-  flags: string[]
-  flag_count: number
-  recommendation: string
-  stages: {
-    honeypot: { score: number; max: number; flags: string[] }
-    holder_concentration: {
-      score: number; max: number; flags: string[]
-      top10_pct: number; holder_count: number
-      top_holders: { address: string; pct: number; is_contract: boolean }[]
-    }
-    liquidity: { score: number; max: number; flags: string[]; tvl_usd: number; volume_7d_usd: number }
-    contract: { score: number; max: number; flags: string[]; tx_count: number; verified: boolean; contract_name: string }
-    activity: { score: number; max: number; flags: string[]; price_change_7d_pct: number }
-  }
-  market: { price_usd: string; price_change_24h: string; tvl_usd: number; symbol: string; name: string }
-}
-
-interface SmartMoneySignal {
-  pair: string; address: string; tvl_usd: number; volume_usd: number
-  velocity_ratio: number; signal_label: string; signal_strength: number
-  signal_reasons: string[]; fee_pct: number
-}
 
 function RiskGauge({ score, color }: { score: number; color: string }) {
   const pct = Math.min(score, 100)
@@ -96,24 +68,26 @@ function StageBar({ label, score, max, flags, icon: Icon }: {
 export default function TokenScreener() {
   const [address, setAddress] = useState('')
   const [tab, setTab] = useState<Tab>('overview')
-  const [scan, setScan] = useState<SecurityScan | null>(null)
+  const [scan, setScan] = useState<SecurityScanResponse | null>(null)
   const [signals, setSignals] = useState<SmartMoneySignal[]>([])
   const [loading, setLoading] = useState(false)
   const [signalsLoading, setSignalsLoading] = useState(false)
   const [error, setError] = useState('')
 
   async function runScan() {
-    if (!address.trim()) return
+    if (!isEvmAddress(address.trim())) {
+      setError('Enter a valid token contract address')
+      return
+    }
     setLoading(true)
     setError('')
     setScan(null)
     try {
-      const r = await fetch(`${API}/api/token/${address.trim()}/security`)
-      const data = await r.json()
+      const data = await getTokenSecurityScan(address.trim())
       setScan(data)
       setTab('overview')
-    } catch (e: any) {
-      setError(e.message || 'Scan failed')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Scan failed')
     } finally {
       setLoading(false)
     }
@@ -122,9 +96,8 @@ export default function TokenScreener() {
   async function loadSignals() {
     setSignalsLoading(true)
     try {
-      const r = await fetch(`${API}/api/smart-money/signals?limit=15`)
-      const data = await r.json()
-      setSignals(data.signals || [])
+      const data = await getSmartMoneySignals(15)
+      setSignals(data.signals ?? [])
       setTab('signals')
     } catch { /* silent */ } finally {
       setSignalsLoading(false)

@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { ArrowUpDown, Zap, Info, Loader2, ArrowRight, CheckCircle2, ExternalLink } from 'lucide-react'
+import { useState } from 'react'
+import { ArrowUpDown, Zap, Info, Loader2, CheckCircle2, ExternalLink } from 'lucide-react'
 import { getSwapQuote } from '../services/api'
 import toast from 'react-hot-toast'
 

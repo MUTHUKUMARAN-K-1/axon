@@ -1,12 +1,18 @@
-/**
- * AXON Frontend API Service
- * Connects to AXON backend MCP server
- */
+import type {
+  AgentActivityResponse,
+  MarketOverview,
+  PoolsResponse,
+  SecurityScanResponse,
+  SmartMoneySignalsResponse,
+  TokenAnalyticsResponse,
+  YieldOpportunitiesResponse,
+} from '../types/api'
 
-const BACKEND = import.meta.env.VITE_AXON_API_URL || 'http://localhost:3000'
+const rawApiBaseUrl = import.meta.env.VITE_AXON_API_URL || 'http://localhost:3000'
+export const API_BASE_URL = rawApiBaseUrl.replace(/\/+$/, '')
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${BACKEND}${path}`, {
+  const res = await fetch(`${API_BASE_URL}${path}`, {
     headers: { 'Content-Type': 'application/json' },
     ...options,
   })
@@ -37,7 +43,7 @@ export const getDefiPositions = (address: string) =>
   request(`/api/defi/${address}`)
 
 // ── Market ─────────────────────────────────────────────────────────────────────
-export const getMarketOverview = () => request('/api/market')
+export const getMarketOverview = () => request<MarketOverview>('/api/market')
 export const getGasPrice = () => request('/api/gas')
 export const getLatestBlock = () => request('/api/block')
 export const getChainInfo = () => request('/api/chain')
@@ -46,17 +52,17 @@ export const getTokenPrice = (token_address: string) =>
   request('/api/token/price', { method: 'POST', body: JSON.stringify({ token_address }) })
 
 export const getTokenAnalytics = (token_address: string) =>
-  request(`/api/token/${token_address}/analytics`)
+  request<TokenAnalyticsResponse>(`/api/token/${token_address}/analytics`)
 
 // ── Uniswap ────────────────────────────────────────────────────────────────────
 export const getTopPools = (limit = 10) =>
-  request(`/api/uniswap/pools?limit=${limit}`)
+  request<PoolsResponse>(`/api/uniswap/pools?limit=${limit}`)
 
 export const getPoolData = (token0: string, token1: string, fee = 3000) =>
   request('/api/uniswap/pool', { method: 'POST', body: JSON.stringify({ token0, token1, fee }) })
 
 export const getYieldOpportunities = (min_apy = 5.0) =>
-  request(`/api/uniswap/yield?min_apy=${min_apy}`)
+  request<YieldOpportunitiesResponse>(`/api/uniswap/yield?min_apy=${min_apy}`)
 
 // ── Swap ───────────────────────────────────────────────────────────────────────
 export const getSwapQuote = (from_token: string, to_token: string, amount: string, slippage = '0.5') =>
@@ -75,9 +81,18 @@ export const listMcpTools = () => request('/mcp/tools')
 export const callMcpTool = (tool_name: string, arguments_: Record<string, unknown>) =>
   request('/mcp/call', { method: 'POST', body: JSON.stringify({ tool_name, arguments: arguments_ }) })
 
+export const getAgentActivity = (limit = 50) =>
+  request<AgentActivityResponse>(`/api/agent/activity?limit=${limit}`)
+
+export const getTokenSecurityScan = (tokenAddress: string) =>
+  request<SecurityScanResponse>(`/api/token/${tokenAddress}/security`)
+
+export const getSmartMoneySignals = (limit = 15) =>
+  request<SmartMoneySignalsResponse>(`/api/smart-money/signals?limit=${limit}`)
+
 // ── WebSocket Agent Terminal ───────────────────────────────────────────────────
 export function createAgentSocket(onMessage: (msg: unknown) => void): WebSocket {
-  const wsUrl = BACKEND.replace(/^http/, 'ws') + '/ws/agent'
+  const wsUrl = API_BASE_URL.replace(/^http/, 'ws') + '/ws/agent'
   const ws = new WebSocket(wsUrl)
   ws.onmessage = (e) => {
     try { onMessage(JSON.parse(e.data)) } catch { onMessage(e.data) }

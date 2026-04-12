@@ -1,20 +1,14 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Activity, Zap, TrendingUp, AlertTriangle, Info,
   RefreshCw, Bot, Clock, CheckCircle, Wifi
 } from 'lucide-react'
+import { getAgentActivity } from '../services/api'
+import type { AgentEvent } from '../types/api'
 
-const API = import.meta.env.VITE_AXON_API_URL || 'https://axon-onld.onrender.com'
+type IconComponent = typeof Activity
 
-interface AgentEvent {
-  id: number
-  type: 'alert' | 'info' | 'action' | 'yield' | 'gas'
-  message: string
-  data: Record<string, any>
-  timestamp: string
-}
-
-const TYPE_CONFIG: Record<string, { icon: any; color: string; bg: string; label: string }> = {
+const TYPE_CONFIG: Record<string, { icon: IconComponent; color: string; bg: string; label: string }> = {
   alert: { icon: AlertTriangle, color: '#F59E0B', bg: 'rgba(245,158,11,0.08)', label: 'Alert' },
   info:  { icon: Info,          color: '#5B3CF5', bg: 'rgba(91,60,245,0.06)',   label: 'Info' },
   action:{ icon: CheckCircle,   color: '#10B981', bg: 'rgba(16,185,129,0.08)', label: 'Action' },
@@ -97,9 +91,8 @@ export default function AgentActivity() {
 
   const fetchActivity = async () => {
     try {
-      const res = await fetch(`${API}/api/agent/activity?limit=50`)
-      const data = await res.json()
-      const acts: AgentEvent[] = data.activities || []
+      const data = await getAgentActivity(50)
+      const acts = data.activities ?? []
       setEvents(acts)
       setLastRefresh(new Date())
       setStats({

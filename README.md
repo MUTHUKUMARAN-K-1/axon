@@ -340,7 +340,7 @@ POST /api/chat
 
 ## Autonomous Agent Loop
 
-AXON runs a persistent background agent every **60 seconds** that:
+AXON runs a persistent background agent every **5 minutes** that:
 
 1. Monitors X Layer gas prices → alerts when < 0.05 gwei (ideal execution window)
 2. Scans Uniswap V3 yield opportunities → flags pools above 8% APY
@@ -460,7 +460,7 @@ WS   /ws/agent                        → Real-time MCP tool executor
 User: "Is 0xSomeToken safe to buy?"
   │
   ▼
-AXON Chat → detects 0x address + "safe" keyword
+AXON Chat → Groq LLaMA classifies intent: security scan + token address
   │
   ▼
 scan_token_security(token_address) — 6 parallel calls:
@@ -513,7 +513,7 @@ Returns: { risk_score: 34, risk_level: "LOW RISK", insights: "...", recommendati
 ### Flow 3: Autonomous Smart Money Alert
 
 ```
-[Background agent — runs every 60s]
+[Background agent — runs every 5 min]
   │
   ▼
 get_smart_money_signals() → scans top 50 Uniswap V3 pools
@@ -659,7 +659,7 @@ Explorer: [OKLink](https://www.oklink.com/xlayer/address/0xDb82c0d91E057E05600C8
 4. Result returned as structured JSON to the AI agent
 
 5. [Optional] Agent calls POST /api/chat with plain English question
-   → Groq LLaMA 3.3 70B routes to correct tool + formats natural language answer
+   → Groq LLaMA 3.3 70B classifies intent + extracts args → dispatches tool → formats answer
 
 6. Autonomous background loop (every 5 min):
    → Scans gas, yield opportunities, block health

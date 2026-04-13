@@ -16,6 +16,9 @@
   ],
   "author": "MUTHUKUMARAN-K-1",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=14.0.0"
   },

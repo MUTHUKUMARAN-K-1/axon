@@ -610,7 +610,7 @@ GET /api/agent/activity
 |---------|-------------|
 | **Dark / Light theme** | Toggle at any time — dark mode uses `#0a0e14` bg with JetBrains Mono font and green accents; preference persisted to localStorage |
 | **Dashboard / Terminal mode** | Header toggle switches between the graphical dashboard and the agent terminal with tool drawer |
-| **MCP Tool Drawer** | 43 tools organised by 7 domains (Portfolio, Market, Swap & Bridge, Security, Explorer, Agent, System) — collapsible, click any tool to pre-fill the terminal |
+| **MCP Tool Drawer** | 45 tools organised by 7 domains (Portfolio, Market, Swap & Bridge, Security, Explorer, Agent, System) — collapsible, click any tool to pre-fill the terminal |
 | **Impersonation mode** | Enter any `0x` address from the header popover to inspect its full portfolio, DeFi positions, and risk score without connecting a wallet |
 | **MCP status badge** | Live connectivity indicator in header — shows `MCP LIVE` or `MCP OFF` based on `/health` ping |
 | **x402 badge** | Always-visible premium gate indicator in header |
@@ -626,7 +626,7 @@ GET /api/agent/activity
 GET  /health                          → { status: "ok" }
 
 # ── MCP Protocol ─────────────────────────────────
-GET  /mcp/tools                       → List all 43 MCP tools
+GET  /mcp/tools                       → List all 45 MCP tools
 POST /mcp/call                        → Execute any MCP tool
 
 # ── Portfolio ─────────────────────────────────────
@@ -781,7 +781,7 @@ AXON is published as a reusable **Onchain OS skill** installable by any AI agent
 npx skills add okx/plugin-store --skill axon-xlayer-intelligence
 ```
 
-The skill exposes all 43 MCP tools with:
+The skill exposes all 45 MCP tools with:
 - Full `curl` examples for every endpoint
 - x402 payment flow documentation
 - Security scanner usage guide
@@ -870,7 +870,7 @@ All free MCP tools are callable without auth:
 # Health
 curl https://axon-onld.onrender.com/health
 
-# List all 43 tools
+# List all 45 tools
 curl https://axon-onld.onrender.com/mcp/tools | python -m json.tool
 
 # Security scan (USDT on X Layer — should return risk_score: 0)
@@ -979,7 +979,7 @@ AXON fills a gap that no other project addresses: **onchain intelligence infrast
 |-------|-------------|----------------|
 | **Data** | Raw RPC + OKLink explorer (human UI) | Machine-readable MCP interface for all X Layer data |
 | **Security** | No multi-source token scanner on X Layer | 6-source scanner with honeypot, holder, and pair age analysis |
-| **AI agents** | No standardized way to query X Layer | 43 MCP tools compatible with Claude, GPT, any open-source agent |
+| **AI agents** | No standardized way to query X Layer | 45 MCP tools compatible with Claude, GPT, any open-source agent |
 | **Payments** | No agentic payment primitive on X Layer | x402 gate with OKB, verified on-chain, replay-protected |
 | **Skills** | No reusable X Layer skill in Plugin Store | First X Layer native skill — installable in one command |
 
@@ -999,10 +999,10 @@ AXON is not a DeFi app that uses AI as a gimmick. It is **the intelligence API l
 
 | Criterion (25% each) | AXON's Implementation |
 |---|---|
-| **Onchain OS / Uniswap integration & innovation** | 15 Onchain OS modules used: wallet assets, net worth, token detail, TX decode, DeFi positions, NFT holdings, yield products, swap execution, cross-chain bridge, address security, URL safety, token security, DEX tokens, price, chain metadata. Uniswap V3 subgraph for 8 features. **43 MCP tools** production-tested. **Published to Plugin Store** ([PR #93](https://github.com/okx/plugin-store/pull/93)). |
+| **Onchain OS / Uniswap integration & innovation** | 15 Onchain OS modules used: wallet assets, net worth, token detail, TX decode, DeFi positions, NFT holdings, yield products, swap execution, cross-chain bridge, address security, URL safety, token security, DEX tokens, price, chain metadata. Uniswap V3 subgraph for 8 features. **45 MCP tools** production-tested. **Published to Plugin Store** ([PR #93](https://github.com/okx/plugin-store/pull/93)). |
 | **X Layer ecosystem integration** | 100% focused on X Layer (Chain ID 196). OKLink explorer (address/block/contract/TX), gas monitoring, OKB pricing, Uniswap V3 liquidity, autonomous scanning every 5 min, x402 payments verified on-chain — all X Layer-native. Live mainnet TX proof: block #57163818. |
 | **AI interactive experience** | Natural language "Ask AXON" chat routes 8+ intent types. Real-time WebSocket Agent Terminal. Autonomous loop with security/yield/gas alerts. LLM-generated portfolio insights via Groq LLaMA 3.3 70B. 11-page React frontend covering explorer, security, DeFi, and trading. |
-| **Product completeness** | 11-page React frontend. FastAPI backend with 50+ REST endpoints. WebSocket agent terminal. 43 MCP tools across 5 source files. 6-source security scanner. OKLink explorer. Security Hub. DeFi Hub. NFT viewer. x402 payment gate. Swagger docs. Deployed live on Vercel + Render. |
+| **Product completeness** | 11-page React frontend. FastAPI backend with 50+ REST endpoints. WebSocket agent terminal. 45 MCP tools across 5 source files. 6-source security scanner. OKLink explorer. Security Hub. DeFi Hub. NFT viewer. x402 payment gate. Swagger docs. Deployed live on Vercel + Render. |
 
 ### Special Prize Targets
 
@@ -1010,11 +1010,11 @@ AXON is not a DeFi app that uses AI as a gimmick. It is **the intelligence API l
 |---|---|---|
 | **Best x402 application** | X Layer | x402 payment gate with full OKLink on-chain verification + replay protection. Three premium tools: `analyze_wallet`, `compare_wallets`, `find_arbitrage_opportunities`. Every rejection returns structured 402 reason + payment instructions. Mainnet proof: block #57163818. |
 | **Most active agent** | X Layer | Autonomous agent loop calls Onchain OS APIs every 5 min (gas, yield, block health). UptimeRobot keeps it alive 24/7. All activity logged to `/api/agent/activity`. |
-| **Best MCP integration** | X Layer | 43 MCP tools across portfolio, market, OKLink explorer, swap, bridge, NFT, security, smart money, AI analysis + natural language routing. Plugin Store skill installable in one command. Compatible with Claude, GPT, any open-source agent. |
+| **Best MCP integration** | X Layer | 45 MCP tools across portfolio, market, OKLink explorer, swap, bridge, NFT, security, smart money, AI analysis + natural language routing. Plugin Store skill installable in one command. Compatible with Claude, GPT, any open-source agent. |
 | **Best economy loop** | X Layer | Agents earn yield intelligence → pay OKB via x402 for premium analysis → use AI insights to optimize positions → repeat. Full earn-pay-earn cycle with on-chain OKB payments and Onchain OS yield data. |
 | **Best Uniswap integration** | Skills | 8 Uniswap V3 subgraph features: top pools, token OHLC, pool fees/APY, protocol stats, pool search by token, smart money velocity signals, yield opportunities, arbitrage scanning. |
 | **Best data analyst** | Skills | 15 Onchain OS modules → deterministic risk scoring + LLM narrative + 7-day Uniswap OHLC + yield APY + smart money velocity + holder concentration + OKLink block/contract/address data. |
-| **Most innovative** | Skills | First X Layer-native AI intelligence layer. 43 MCP tools, 6-source security scanner (only multi-source token scanner on X Layer), one-command install, x402 agentic payment gate — all on a single reusable skill. |
+| **Most innovative** | Skills | First X Layer-native AI intelligence layer. 45 MCP tools, 6-source security scanner (only multi-source token scanner on X Layer), one-command install, x402 agentic payment gate — all on a single reusable skill. |
 
 ---
 
@@ -1022,14 +1022,15 @@ AXON is not a DeFi app that uses AI as a gimmick. It is **the intelligence API l
 
 **AXON is not a demo.** It is production infrastructure for the agentic era of X Layer:
 
-1. **43 MCP tools** — the most comprehensive AI agent skill on X Layer, spanning portfolio, security, DeFi, explorer, swap, bridge, and yield
+1. **45 MCP tools** — the most comprehensive AI agent skill on X Layer, spanning portfolio, security, DeFi, explorer, swap, bridge, and yield
 2. **15 Onchain OS modules** — deeper integration than any other hackathon project: NFT, yield products, address security, URL safety, cross-chain bridge, swap execution, TX decode, net worth, and more
 3. **6-source security scanner** — multi-source consensus eliminates false negatives. Uses OKX's own security API, DexScreener, DefiLlama, Uniswap V3, OKLink, and Onchain OS simultaneously
 4. **Real on-chain x402 verification** — not simulated. OKLink confirms every payment tx before execution. Replay protection prevents abuse. Mainnet proof: block #57163818
-5. **Production-grade UI** — dark/light theme toggle, Dashboard + Terminal dual mode, collapsible 43-tool drawer organized by domain, impersonation mode to inspect any X Layer address, live MCP status badge
+5. **Production-grade UI** — dark/light theme toggle, Dashboard + Terminal dual mode, collapsible 45-tool drawer organized by domain, impersonation mode to inspect any X Layer address, live MCP status badge
 6. **Natural language routing** — Groq LLaMA 3.3 70B classifies 8+ intent types with keyword fallback — no regex brittle matching
 7. **Plugin Store published** — [PR #93](https://github.com/okx/plugin-store/pull/93) — installable by any AI agent in one command
-8. **Fully deployed and tested** — 27 automated tests, frontend on Vercel, backend on Render with UptimeRobot keeping it live 24/7, zero setup to evaluate
+8. **AI puts skin in the game** — AxonConfidenceBond automatically locks 0.001 OKB on every SAFE verdict. Anyone can challenge within 7 days and win the bond if the token turns dangerous. No other AI security tool puts real money behind its verdicts
+9. **Fully deployed and tested** — 27 automated tests, frontend on Vercel, backend on Render with UptimeRobot keeping it live 24/7, zero setup to evaluate
 
 Every DeFi protocol on X Layer becomes AI-accessible through AXON. Every new token can be security-scanned. Every wallet can be analyzed. Every yield opportunity can be surfaced. That is the permanent intelligence layer X Layer deserves.
 

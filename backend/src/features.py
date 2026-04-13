@@ -235,8 +235,45 @@ async def start_agent_loop():
                                 "payment_sig": payment_proof["signature"][:16] + "...",
                             },
                         )
+
+                        # ── Phase 3: ConfidenceBond — skin-in-the-game ─────────
+                        # If verdict is SAFE (risk < 30), the SecurityAgent locks
+                        # 0.001 OKB in the AxonConfidenceBond contract.
+                        # Wrong verdicts cost the agent real capital — financial accountability.
+                        if risk < 30 and label in ("SAFE", "LOW"):
+                            try:
+                                from .agents.verdict_ledger import lock_bond
+                                bond_tx = await lock_bond(token_addr)
+                                if bond_tx:
+                                    _log_activity(
+                                        "bond",
+                                        f"ConfidenceBond: 0.001 OKB locked for SAFE verdict on {symbol} "
+                                        f"— tx {bond_tx[:16]}...",
+                                        {
+                                            "token": token_addr,
+                                            "bond_amount_okb": 0.001,
+                                            "tx_hash": bond_tx,
+                                            "risk_score": risk,
+                                            "explorer": f"https://www.oklink.com/xlayer/tx/{bond_tx}",
+                                        },
+                                    )
+                                else:
+                                    _log_activity(
+                                        "info",
+                                        f"SAFE verdict for {symbol} (risk {risk}) — ConfidenceBond queued (no key configured)",
+                                        {"token": token_addr, "risk_score": risk},
+                                    )
+                            except Exception as bond_err:
+                                logger.debug(f"ConfidenceBond skipped for {token_addr[:10]}: {bond_err}")
+                                _log_activity(
+                                    "info",
+                                    f"SAFE verdict for {symbol} (risk {risk}) — bond tx pending",
+                                    {"token": token_addr, "risk_score": risk},
+                                )
+
                 except Exception as scan_err:
                     logger.debug(f"Agent scan error for {token_addr[:10]}: {scan_err}")
+
 
         except Exception as e:
             _log_activity("alert", f"Agent loop error: {str(e)[:80]}", {})

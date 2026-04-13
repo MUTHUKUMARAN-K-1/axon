@@ -18,10 +18,33 @@
 
 | Hackathon Criterion (25% each) | AXON Evidence |
 |-------------------------------|---------------|
-| **X Layer Integration** | 45 MCP tools hitting X Layer RPC, OKLink, OKX DEX, OKX Onchain OS — all on Chain ID 196. [Mainnet TX](https://www.oklink.com/x-layer/tx/0x14a9bd9d2cbbb80be3373dd8b414104d107466247c48a2bd3c8ceb8eee58360b) |
-| **Smart Contracts** | 2 deployed contracts: [AxonVerdictLedger](https://www.oklink.com/xlayer/address/0x0191d5ada56672507fdb283ac59d45bde08a53f8) (public security oracle) + [AxonConfidenceBond](https://www.oklink.com/xlayer/address/0xe164011de202eb0ebf5f01ee5d9851c801a9c675) (skin-in-the-game bonds) |
+| **X Layer Integration** | 45 MCP tools hitting X Layer RPC, OKLink, OKX DEX, OKX Onchain OS — all on Chain ID 196. [Original x402 TX](https://www.oklink.com/x-layer/tx/0x14a9bd9d2cbbb80be3373dd8b414104d107466247c48a2bd3c8ceb8eee58360b) + [10 economy loop TXs confirmed ↓](#economy-loop-proof) |
+| **Smart Contracts** | 2 deployed contracts: [AxonVerdictLedger](https://www.oklink.com/xlayer/address/0x0191d5ada56672507fdb283ac59d45bde08a53f8) (public security oracle) + [AxonConfidenceBond](https://www.oklink.com/xlayer/address/0xe164011de202eb0ebf5f01ee5d9851c801a9c675) (skin-in-the-game bonds — locks OKB on every SAFE verdict) |
 | **MCP / Plugin Store** | [PR #93 submitted](https://github.com/okx/plugin-store/pull/93) · 45 tools live at `https://axon-onld.onrender.com/mcp/tools` · Full OpenAPI at `/docs` |
-| **Innovation / AI** | x402 two-level micro-payments · Autonomous 5-min agent loop · 6-source parallel security scoring · Natural language → MCP tool routing · `/llms.txt` AI discovery · Agent registry + leaderboard · 10 on-chain task challenges |
+| **Innovation / AI** | x402 two-level micro-payments · ConfidenceBond (financial accountability per verdict) · Autonomous 5-min agent loop · 6-source security scoring · NLP → MCP routing · `/llms.txt` AI discovery · `npx @axon-xlayer/start` CLI · Agent registry + leaderboard |
+
+---
+
+## Economy Loop Proof
+
+**10 real OKB payments confirmed on X Layer mainnet** — agent wallet → AXON agent wallet, documenting the full earn→pay→earn cycle.
+
+| # | TX Hash | Block | OKLink |
+|---|---------|-------|--------|
+| 1 | `0xdb8b7cb1...168e8d` | #57317484 | [view](https://www.oklink.com/xlayer/tx/0xdb8b7cb14e1de5150d37fe6f7c24de5a273d02f5d01f1886891c9fdae7168e8d) |
+| 2 | `0x92c501b6...e5913` | #57317487 | [view](https://www.oklink.com/xlayer/tx/0x92c501b6c17fa93a8066363d04ddbd75a98cea34fa2d46d788ed11fd6c5e5913) |
+| 3 | `0x373c2f01...616d` | #57317491 | [view](https://www.oklink.com/xlayer/tx/0x373c2f01a4586352b6e468d93bd8747b186d43b1b31588188a2fb0a6e417616d) |
+| 4 | `0x074fcfbf...73eb` | #57317496 | [view](https://www.oklink.com/xlayer/tx/0x074fcfbfab03f3dfc1969140a6366813529f008e253dbbb04857a597e6ff73eb) |
+| 5 | `0xdcb72c48...2dc0` | #57317504 | [view](https://www.oklink.com/xlayer/tx/0xdcb72c481546d609af9111748a32385ef6d6b762361cc14c41d08b16b0af2dc0) |
+| 6 | `0x88098f59...1c1f` | #57317508 | [view](https://www.oklink.com/xlayer/tx/0x88098f59f72158e8e494eaa791e94dbc0cffa52ec2170ccd7ed11e637a041c1f) |
+| 7 | `0x2a6b8657...95a9` | #57317512 | [view](https://www.oklink.com/xlayer/tx/0x2a6b86577e14772619946fb68f3f7afcf110cf7c68b6429b8a6915c213e395a9) |
+| 8 | `0x31e52fd3...14b8` | #57317517 | [view](https://www.oklink.com/xlayer/tx/0x31e52fd301e737f94557efbf827d1ca54e251a68455b64b9f77bf4f8fd4b14b8) |
+| 9 | `0x0b14dc98...8211` | #57317521 | [view](https://www.oklink.com/xlayer/tx/0x0b14dc98496eea760c05497bad8b1e2a9f38873250f4047cd6de967f86948211) |
+| 10 | `0x8b9cc777...32d8f` | #57317525 | [view](https://www.oklink.com/xlayer/tx/0x8b9cc7774c3806ada962084e4d96f21af1103322bd85ff23f3462845a7e32d8f) |
+
+**Economy Loop:** Agent oracle wallet earns OKB via x402 premium tool calls → funds on-chain ConfidenceBond locks for SAFE verdicts → wrong verdicts slash the bond (skin-in-the-game). Self-sustaining with no subsidies.
+
+
 
 ---
 

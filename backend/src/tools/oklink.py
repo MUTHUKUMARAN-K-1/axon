@@ -34,7 +34,7 @@ async def get_address_info(address: str) -> dict:
     try:
         async with httpx.AsyncClient(timeout=12.0) as client:
             r = await client.get(
-                f"{OKLINK_BASE}/api/v5/explorer/address/information",
+                f"{OKLINK_BASE}/api/v5/explorer/address/information-evm",
                 params={"chainShortName": XLAYER_SHORT, "address": address},
                 headers=_oklink_headers(),
             )
@@ -117,7 +117,7 @@ async def get_block_list(limit: int = 10) -> dict:
     try:
         async with httpx.AsyncClient(timeout=12.0) as client:
             r = await client.get(
-                f"{OKLINK_BASE}/api/v5/explorer/block/latest",
+                f"{OKLINK_BASE}/api/v5/explorer/block/block-list",
                 params={"chainShortName": XLAYER_SHORT, "limit": str(min(limit, 50))},
                 headers=_oklink_headers(),
             )
@@ -154,7 +154,7 @@ async def get_block_detail(block_number: str) -> dict:
     try:
         async with httpx.AsyncClient(timeout=12.0) as client:
             r = await client.get(
-                f"{OKLINK_BASE}/api/v5/explorer/block/fills",
+                f"{OKLINK_BASE}/api/v5/explorer/block/block-detail",
                 params={"chainShortName": XLAYER_SHORT, "height": block_number},
                 headers=_oklink_headers(),
             )

@@ -12,7 +12,7 @@ const AGENT_WALLET = "0xDb82c0d91E057E05600C8F8dc836bEb41da6df14";
 const CHAIN_ID = 196;
 const PLUGIN_PR = "https://github.com/okx/plugin-store/pull/93";
 const GITHUB = "https://github.com/MUTHUKUMARAN-K-1/axon";
-const VERSION = "1.2.0";
+const VERSION = "1.3.0";
 
 // ─── ANSI Colors (zero deps) ─────────────────────────────────────────────────
 const c = {
@@ -83,12 +83,18 @@ function riskBadge(score) {
 
 // ─── Banner ───────────────────────────────────────────────────────────────────
 function banner() {
+  const M = "\x1b[35m", R = c.reset, B = c.bold, D = c.dim;
   console.log(`
-${cyan("╔═══════════════════════════════════════════════════════════════╗")}
-${cyan("║")}  ${bold("AXON")} ${dim("— Neural Intelligence Layer for X Layer")}              ${cyan("║")}
-${cyan("║")}  ${cyan("45 MCP Tools")} · ${yellow("x402 Payments")} · ${green("On-Chain Oracle")}             ${cyan("║")}
-${cyan("╚═══════════════════════════════════════════════════════════════╝")}
-  ${dim(`v${VERSION}  Chain ID ${CHAIN_ID}  ${API}`)}`);
+${M} █████╗ ██╗  ██╗ ██████╗ ███╗   ██╗${R}
+${M}██╔══██╗╚██╗██╔╝██╔═══██╗████╗  ██║${R}
+${M}███████║ ╚███╔╝ ██║   ██║██╔██╗ ██║${R}
+${M}██╔══██║ ██╔██╗ ██║   ██║██║╚██╗██║${R}
+${M}██║  ██║██╔╝ ██╗╚██████╔╝██║ ╚████║${R}
+${M}╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝${R}  ${D}v${VERSION}${R}
+
+  ${B}Neural Intelligence Layer for X Layer${R}
+  ${cyan("45 MCP Tools")} · ${yellow("x402 OKB Payments")} · ${green("On-Chain Security Oracle")} · ${M}Chain 196${R}
+${D}${"─".repeat(65)}${R}`);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -186,14 +192,18 @@ ${bold("─────────────────── QUICK START (3
 
 ${bold("─────────────────────── COMMANDS ────────────────────────────────")}
 
-  ${cyan("npx @axon-xlayer/start scan")} ${dim("<token>")}      Security scan any token
-  ${cyan("npx @axon-xlayer/start wallet")} ${dim("<address>")}  Wallet portfolio + analysis
+  ${cyan("npx @axon-xlayer/start tools")}               List all 45 MCP tools
+  ${cyan("npx @axon-xlayer/start tools")} ${dim("<keyword>")}    Filter tools (e.g. security, wallet)
+  ${cyan("npx @axon-xlayer/start call")} ${dim("<tool>")}        Call any of the 45 tools
+  ${cyan("npx @axon-xlayer/start call")} ${dim("<tool> --args '{}'")}  Call with arguments
+  ${cyan("npx @axon-xlayer/start scan")} ${dim("<token>")}       Security scan any token
+  ${cyan("npx @axon-xlayer/start wallet")} ${dim("<address>")}   Wallet portfolio + analysis
   ${cyan("npx @axon-xlayer/start gas")}                 Live gas price on X Layer
   ${cyan("npx @axon-xlayer/start tasks")}               10 X Layer agent challenges
   ${cyan("npx @axon-xlayer/start leaderboard")}         Top agents by scans
   ${cyan("npx @axon-xlayer/start register")} ${dim("<name> <wallet>")}  Register agent
-  ${cyan("npx @axon-xlayer/start health")}              API health check
-  ${cyan("npx @axon-xlayer/start")} ${dim("[cmd] --json")}     Machine-readable output
+  ${cyan("npx @axon-xlayer/start health")}              API health + latency
+  ${cyan("npx @axon-xlayer/start")} ${dim("[cmd] --json")}      Machine-readable output
 
 ${bold("─────────────────── PREMIUM TOOLS (x402) ────────────────────────")}
 
@@ -266,25 +276,32 @@ async function cmdWallet(address, jsonMode) {
   const spin = spinner(`Loading wallet ${address.slice(0, 10)}...`);
   try {
     const [portfolioRes, balanceRes] = await Promise.all([
-      fetch(`${API}/mcp/call`, { method: "POST", body: JSON.stringify({ tool_name: "get_wallet_portfolio", arguments: { wallet_address: address } }) }),
-      fetch(`${API}/mcp/call`, { method: "POST", body: JSON.stringify({ tool_name: "get_native_balance", arguments: { wallet_address: address } }) }),
+      fetch(`${API}/mcp/call`, { method: "POST", body: JSON.stringify({ tool_name: "get_wallet_portfolio", arguments: { address } }) }),
+      fetch(`${API}/mcp/call`, { method: "POST", body: JSON.stringify({ tool_name: "get_native_balance", arguments: { address } }) }),
     ]);
-    const portfolio = portfolioRes.json()?.result ?? {};
-    const balance = balanceRes.json()?.result ?? {};
+    const portfolioData = portfolioRes.json();
+    const balanceData = balanceRes.json();
+    const portfolio = portfolioData?.result ?? {};
+    const balance = balanceData?.result ?? {};
     spin.stop(green("✔ Wallet loaded"));
     if (jsonMode) { console.log(JSON.stringify({ address, portfolio, balance }, null, 2)); return; }
     const tokens = portfolio?.tokens ?? [];
-    const nativeOKB = balance?.balance ?? balance?.native_balance ?? "?";
+    const nativeOKB = balance?.balance_okb ?? balance?.balance ?? balance?.native_balance ?? "?";
+    const portfolioOk = portfolio?.success !== false;
     console.log(`
 ${bold("  WALLET PORTFOLIO")}  ${dim(address)}
 
   Native OKB:   ${cyan(nativeOKB + " OKB")}
-  Tokens held:  ${cyan(tokens.length)}
+  Tokens held:  ${portfolioOk ? cyan(String(tokens.length)) : yellow("requires OKX API key")}
+  Net Worth:    ${portfolio?.total_usd_value != null ? cyan("$" + portfolio.total_usd_value) : dim("n/a")}
 
-${tokens.slice(0, 10).map(t => `  ${green("●")} ${bold(t.symbol ?? "?")}  ${t.balance ?? "?"} ${dim("($" + (t.usd_value ?? "?") + ")")}`).join("\n") || dim("  No tokens found or wallet empty")}
+${portfolioOk
+  ? tokens.slice(0, 10).map(t => `  ${green("●")} ${bold((t.symbol ?? "?").padEnd(8))}  ${(t.balance ?? "?").toString().padEnd(18)} ${dim("$" + (t.value_usd ?? t.usd_value ?? "?"))}`).join("\n") || dim("  Wallet is empty on X Layer")
+  : `  ${yellow("●")} Token list unavailable: ${dim(portfolio?.error ?? "OKX API auth required")}`
+}
 
   ${dim(`Analyze with AI: POST ${API}/mcp/call`)}
-  ${dim(`{"tool_name":"analyze_wallet","arguments":{"wallet_address":"${address}"}}`)}
+  ${dim(`{"tool_name":"analyze_wallet","arguments":{"address":"${address}"}}`)}
   ${dim("(requires 0.001 OKB x402 payment)")}
 `);
   } catch (e) {
@@ -422,6 +439,125 @@ ${bold("  AGENT REGISTERED")}
   }
 }
 
+async function cmdTools(filter, jsonMode) {
+  const spin = spinner("Loading all 45 MCP tools...");
+  try {
+    const res = await fetch(`${API}/mcp/tools`);
+    const data = res.json();
+    let tools = data?.tools ?? [];
+    if (filter) tools = tools.filter(t => t.name.includes(filter) || (t.description ?? "").toLowerCase().includes(filter.toLowerCase()));
+    spin.stop(green(`✔ ${tools.length} tools loaded`));
+    if (jsonMode) { console.log(JSON.stringify({ tools }, null, 2)); return; }
+
+    // Group by category tag
+    const groups = {};
+    tools.forEach(t => {
+      const tag = (t.tags?.[0] ?? t.category ?? "general").toLowerCase();
+      if (!groups[tag]) groups[tag] = [];
+      groups[tag].push(t);
+    });
+
+    console.log(`\n${bold("  AXON MCP TOOLS")}  ${dim(tools.length + " tools available")}\n`);
+    Object.entries(groups).forEach(([tag, list]) => {
+      console.log(`  ${cyan(tag.toUpperCase())}`);
+      list.forEach(t => {
+        const premium = t.premium ? yellow(" [x402]") : "";
+        console.log(`    ${green("●")} ${bold(t.name.padEnd(35))}${premium}  ${dim(t.description ?? "")}`);
+      });
+      console.log();
+    });
+    console.log(`  ${dim(`Call any tool: npx @axon-xlayer/start call <tool_name>`)}`);
+    console.log(`  ${dim(`Filter:        npx @axon-xlayer/start tools <keyword>`)}`);
+    console.log(`  ${dim(`API:           GET ${API}/mcp/tools`)}\n`);
+  } catch (e) {
+    spin.stop(red("✘ Failed"));
+    console.error(red(e.message));
+    process.exit(1);
+  }
+}
+
+async function cmdCall(toolName, rawArgs, jsonMode) {
+  if (!toolName) {
+    console.error(red("Usage: npx @axon-xlayer/start call <tool_name> [--args '{\"key\":\"value\"}']"));
+    console.error(red("       npx @axon-xlayer/start tools   (to see all tool names)"));
+    process.exit(1);
+  }
+  let toolArgs = {};
+  if (rawArgs) {
+    try { toolArgs = JSON.parse(rawArgs); }
+    catch { console.error(red("Invalid --args JSON. Example: --args '{\"wallet_address\":\"0x...\"}'"));  process.exit(1); }
+  }
+
+  const spin = spinner(`Calling ${toolName}...`);
+  try {
+    const res = await fetch(`${API}/mcp/call`, {
+      method: "POST",
+      body: JSON.stringify({ tool_name: toolName, arguments: toolArgs }),
+    });
+
+    if (res.status === 402) {
+      const data = res.json();
+      spin.stop(yellow("⚠ Payment Required (x402)"));
+      if (jsonMode) { console.log(JSON.stringify(data, null, 2)); return; }
+      const x402 = data?.x402 ?? {};
+      const accepts = x402?.accepts?.[0] ?? {};
+      console.log(`
+${bold("  PREMIUM TOOL — x402 PAYMENT REQUIRED")}
+
+  Tool:     ${cyan(toolName)}
+  Price:    ${yellow(accepts.maxAmountRequired ?? "?")} ${accepts.asset ?? "OKB"}
+  Pay to:   ${dim(accepts.payTo ?? AGENT_WALLET)}
+  Network:  X Layer Mainnet (Chain ID ${CHAIN_ID})
+
+  ${bold("How to pay:")}
+  1. Send OKB to the address above on X Layer
+  2. Copy the transaction hash
+  3. Add header: ${cyan("X-PAYMENT: 0x<tx_hash>")}
+
+  ${dim(`curl -X POST ${API}/mcp/call \\`)}
+  ${dim(`  -H "Content-Type: application/json" \\`)}
+  ${dim(`  -H "X-PAYMENT: 0x<your_tx_hash>" \\`)}
+  ${dim(`  -d '{"tool_name":"${toolName}","arguments":${JSON.stringify(toolArgs)}}'`)}
+`);
+      return;
+    }
+
+    const data = res.json();
+    const result = data?.result ?? data;
+    spin.stop(res.ok ? green(`✔ ${toolName} complete`) : red(`✘ ${toolName} failed`));
+
+    if (jsonMode) { console.log(JSON.stringify(result, null, 2)); return; }
+
+    // Pretty-print the result
+    console.log(`\n${bold(`  ${toolName.toUpperCase().replace(/_/g, " ")}`)}\n`);
+    function printObj(obj, indent = "  ") {
+      if (typeof obj !== "object" || obj === null) { console.log(`${indent}${cyan(String(obj))}`); return; }
+      if (Array.isArray(obj)) {
+        obj.slice(0, 20).forEach((item, i) => {
+          if (typeof item === "object") { console.log(`${indent}${dim("[" + i + "]")}`); printObj(item, indent + "  "); }
+          else console.log(`${indent}${dim("[" + i + "]")} ${cyan(String(item))}`);
+        });
+        if (obj.length > 20) console.log(`${indent}${dim(`... +${obj.length - 20} more`)}`);
+        return;
+      }
+      Object.entries(obj).slice(0, 30).forEach(([k, v]) => {
+        if (typeof v === "object" && v !== null) { console.log(`${indent}${bold(k)}:`); printObj(v, indent + "  "); }
+        else console.log(`${indent}${bold(k.padEnd(25))} ${cyan(String(v ?? ""))}`);
+      });
+    }
+    printObj(result);
+    console.log(`\n  ${dim(`Raw JSON: npx @axon-xlayer/start call ${toolName} --json`)}`);
+    if (Object.keys(toolArgs).length === 0) {
+      console.log(`  ${dim(`With args: npx @axon-xlayer/start call ${toolName} --args '{"key":"value"}' `)}\n`);
+    } else { console.log(); }
+
+  } catch (e) {
+    spin.stop(red("✘ Failed"));
+    console.error(red(e.message));
+    process.exit(1);
+  }
+}
+
 async function cmdHealth(jsonMode) {
   const spin = spinner("Checking AXON health...");
   try {
@@ -478,14 +614,16 @@ async function main() {
   ${bold("Usage:")} npx @axon-xlayer/start [command] [args] [--json]
 
   ${bold("Commands:")}
-    ${cyan("(no command)")}              Full orient screen + live stats
-    ${cyan("scan")} <token>              Token security scan (6 sources)
-    ${cyan("wallet")} <address>          Wallet portfolio + token balances
-    ${cyan("gas")}                       Live gas price on X Layer
-    ${cyan("tasks")} [task-id]           List tasks (or get single task detail)
-    ${cyan("leaderboard")}               Top agents by scans completed
-    ${cyan("register")} <name> <wallet>  Register your agent
-    ${cyan("health")}                    API health + latency check
+    ${cyan("(no command)")}                       Full orient screen + live stats
+    ${cyan("tools")} [keyword]                    List all 45 MCP tools (filter by keyword)
+    ${cyan("call")} <tool> [--args '{}']          Call any of the 45 tools directly
+    ${cyan("scan")} <token>                       Token security scan (6 sources)
+    ${cyan("wallet")} <address>                   Wallet portfolio + token balances
+    ${cyan("gas")}                                Live gas price on X Layer
+    ${cyan("tasks")} [task-id]                    List tasks (or get single task detail)
+    ${cyan("leaderboard")}                        Top agents by scans completed
+    ${cyan("register")} <name> <wallet>           Register your agent
+    ${cyan("health")}                             API health + latency check
 
   ${bold("Flags:")}
     ${cyan("--json")}    Machine-readable JSON output (for AI agents)
@@ -494,6 +632,11 @@ async function main() {
 
   ${bold("Examples:")}
     npx @axon-xlayer/start
+    npx @axon-xlayer/start tools
+    npx @axon-xlayer/start tools security
+    npx @axon-xlayer/start call get_gas_price
+    npx @axon-xlayer/start call get_rich_list --args '{"limit":5}'
+    npx @axon-xlayer/start call get_wallet_portfolio --args '{"wallet_address":"0x..."}'
     npx @axon-xlayer/start scan 0x1e4a5963abfd975d8c9021ce480b42188849d41d
     npx @axon-xlayer/start wallet 0xDb82c0d91E057E05600C8F8dc836bEb41da6df14
     npx @axon-xlayer/start tasks
@@ -507,14 +650,21 @@ async function main() {
   }
 
   switch (cmd) {
-    case "scan":     return cmdScan(filteredArgs[1], jsonMode);
-    case "wallet":   return cmdWallet(filteredArgs[1], jsonMode);
-    case "gas":      return cmdGas(jsonMode);
-    case "tasks":    return cmdTasks(filteredArgs[1], jsonMode);
+    case "scan":        return cmdScan(filteredArgs[1], jsonMode);
+    case "wallet":      return cmdWallet(filteredArgs[1], jsonMode);
+    case "gas":         return cmdGas(jsonMode);
+    case "tasks":       return cmdTasks(filteredArgs[1], jsonMode);
     case "leaderboard": return cmdLeaderboard(jsonMode);
-    case "register": return cmdRegister(filteredArgs[1], filteredArgs[2], jsonMode);
-    case "health":   return cmdHealth(jsonMode);
-    default:         return cmdOrient(jsonMode);
+    case "register":    return cmdRegister(filteredArgs[1], filteredArgs[2], jsonMode);
+    case "health":      return cmdHealth(jsonMode);
+    case "tools":       return cmdTools(filteredArgs[1], jsonMode);
+    case "call": {
+      // Find --args value
+      const argsIdx = args.indexOf("--args");
+      const rawArgs = argsIdx !== -1 ? args[argsIdx + 1] : null;
+      return cmdCall(filteredArgs[1], rawArgs, jsonMode);
+    }
+    default:            return cmdOrient(jsonMode);
   }
 }
 

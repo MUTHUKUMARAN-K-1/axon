@@ -5,7 +5,7 @@ const API = import.meta.env.VITE_API_URL || 'https://axon-onld.onrender.com'
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ background: 'white', borderRadius: 16, border: '1px solid var(--border-default)', padding: 24, boxShadow: 'var(--shadow-sm)' }}>
+    <div style={{ background: 'var(--surface-card)', borderRadius: 16, border: '1px solid var(--border-default)', padding: 24, boxShadow: 'var(--shadow-sm)' }}>
       <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 16 }}>{title}</div>
       {children}
     </div>
@@ -75,7 +75,7 @@ export default function Explorer() {
         {tabs.map(({ key, label, icon: Icon }) => (
           <button key={key} onClick={() => { setTab(key); setResult(null) }} style={{
             display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 99, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600,
-            background: tab === key ? 'var(--axon-primary)' : 'white',
+            background: tab === key ? 'var(--axon-primary)' : 'var(--surface-card)',
             color: tab === key ? 'white' : 'var(--text-secondary)',
             boxShadow: tab === key ? '0 2px 8px rgba(91,60,245,0.3)' : '0 1px 4px rgba(0,0,0,0.08)',
             border: tab === key ? 'none' : '1px solid var(--border-default)',
@@ -90,7 +90,7 @@ export default function Explorer() {
         <input value={input} onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && search()}
           placeholder={tabs.find(t => t.key === tab)?.placeholder}
-          style={{ flex: 1, padding: '12px 16px', borderRadius: 12, border: '2px solid var(--border-default)', fontSize: 14, fontFamily: 'monospace', outline: 'none' }}
+          style={{ flex: 1, padding: '12px 16px', borderRadius: 12, border: '1.5px solid var(--border-default)', background: 'var(--surface-bg)', color: 'var(--text-primary)', fontSize: 14, fontFamily: 'monospace', outline: 'none' }}
         />
         <button onClick={search} disabled={loading} style={{
           padding: '12px 24px', borderRadius: 12, border: 'none', background: 'var(--axon-primary)', color: 'white', fontWeight: 700, fontSize: 14, cursor: 'pointer',
@@ -166,7 +166,7 @@ export default function Explorer() {
         {blocks.length > 0 ? (
           <div style={{ display: 'grid', gap: 8 }}>
             {blocks.slice(0, 8).map((b: any, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: 'white', borderRadius: 10, border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-sm)' }}>
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: 'var(--surface-card)', borderRadius: 10, border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-sm)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <div style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--axon-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Blocks size={16} color="var(--axon-primary)" />

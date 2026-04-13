@@ -24,6 +24,50 @@ logger = logging.getLogger("axon.features")
 ACTIVITY_LOG: deque = deque(maxlen=100)
 _loop_running = False
 
+# ─── Agent Registry (in-memory) ───────────────────────────────────────────────
+# Maps wallet_address → {name, wallet, registered_at, scans, tasks_completed}
+AGENT_REGISTRY: dict[str, dict] = {}
+
+def register_agent(wallet: str, name: str) -> dict:
+    """Register or update an AI agent in the in-memory registry."""
+    wallet = wallet.lower().strip()
+    if wallet in AGENT_REGISTRY:
+        AGENT_REGISTRY[wallet]["name"] = name
+        return AGENT_REGISTRY[wallet]
+    AGENT_REGISTRY[wallet] = {
+        "name": name,
+        "wallet": wallet,
+        "registered_at": datetime.now(timezone.utc).isoformat(),
+        "scans": 0,
+        "tasks_completed": 0,
+        "total_okb_paid": 0.0,
+    }
+    return AGENT_REGISTRY[wallet]
+
+def record_agent_scan(wallet: str) -> None:
+    """Increment scan counter for a registered agent wallet."""
+    if not wallet:
+        return
+    w = wallet.lower().strip()
+    if w not in AGENT_REGISTRY:
+        AGENT_REGISTRY[w] = {
+            "name": f"agent-{w[:8]}",
+            "wallet": w,
+            "registered_at": datetime.now(timezone.utc).isoformat(),
+            "scans": 0,
+            "tasks_completed": 0,
+            "total_okb_paid": 0.0,
+        }
+    AGENT_REGISTRY[w]["scans"] += 1
+
+def get_leaderboard(limit: int = 20) -> list[dict]:
+    """Return agents sorted by scans desc."""
+    agents = sorted(AGENT_REGISTRY.values(), key=lambda a: a["scans"], reverse=True)
+    return [
+        {**a, "rank": i + 1}
+        for i, a in enumerate(agents[:limit])
+    ]
+
 # ─── Inter-Agent x402 Payment System ──────────────────────────────────────────
 # AXON runs two logical agents:
 #   IntelAgent  — the autonomous loop that discovers tokens to scan
@@ -199,6 +243,137 @@ async def start_agent_loop():
             logger.error(f"Agent loop error: {e}")
 
         await asyncio.sleep(300)  # 5 min — reduce memory pressure on free tier
+
+
+# ─── AXON Task Catalogue (AI Agent Earn-style discovery) ─────────────────────
+# Tasks are things an AI agent can DO with AXON tools on X Layer.
+# No payouts — AXON is the skill, not the bank — but the task list proves
+# agentic discoverability and aligns with the Skills Arena criteria.
+
+AXON_TASKS = [
+    {
+        "id": "axon-001",
+        "title": "Check the Gas Price",
+        "category": "onboarding",
+        "difficulty": "easy",
+        "description": "Call GET /api/gas and report the current gwei on X Layer.",
+        "tool": "get_gas_price",
+        "proof_hint": "JSON response with gas_price_gwei field",
+        "verify_type": "api_response_match",
+        "status": "open",
+    },
+    {
+        "id": "axon-002",
+        "title": "Scan a Token for Honeypot Risk",
+        "category": "security",
+        "difficulty": "easy",
+        "description": (
+            "Run scan_token_security on USDT (0x1e4a5963abfd975d8c9021ce480b42188849d41d). "
+            "Confirm risk_label is SAFE."
+        ),
+        "tool": "scan_token_security",
+        "proof_hint": "JSON with risk_label=SAFE",
+        "verify_type": "data_match",
+        "status": "open",
+    },
+    {
+        "id": "axon-003",
+        "title": "Read the On-Chain Verdict for USDT",
+        "category": "onchain",
+        "difficulty": "easy",
+        "description": (
+            "Call get_onchain_verdict for USDT on X Layer. "
+            "The result is read directly from AxonVerdictLedger (0x0191d5ada56672507fdb283ac59d45bde08a53f8)."
+        ),
+        "tool": "get_onchain_verdict",
+        "proof_hint": "JSON with risk_score and timestamp from on-chain oracle",
+        "verify_type": "data_match",
+        "status": "open",
+    },
+    {
+        "id": "axon-004",
+        "title": "Count All On-Chain Verdicts",
+        "category": "onchain",
+        "difficulty": "easy",
+        "description": "Call get_total_verdicts. Report the integer count of security verdicts stored on AxonVerdictLedger.",
+        "tool": "get_total_verdicts",
+        "proof_hint": "JSON with total_verdicts integer",
+        "verify_type": "data_match",
+        "status": "open",
+    },
+    {
+        "id": "axon-005",
+        "title": "Find the Best Yield on X Layer",
+        "category": "defi",
+        "difficulty": "medium",
+        "description": "Call get_yield_opportunities with min_apy=5.0. Return the top pool name and APY.",
+        "tool": "get_yield_opportunities",
+        "proof_hint": "JSON with at least one opportunity including pair and estimated_fee_apy_pct",
+        "verify_type": "text_contains",
+        "status": "open",
+    },
+    {
+        "id": "axon-006",
+        "title": "Detect Smart Money Accumulation",
+        "category": "intelligence",
+        "difficulty": "medium",
+        "description": "Run get_smart_money_signals. Identify the top token by accumulation velocity.",
+        "tool": "get_smart_money_signals",
+        "proof_hint": "JSON list with token address and volume_change_pct",
+        "verify_type": "text_contains",
+        "status": "open",
+    },
+    {
+        "id": "axon-007",
+        "title": "Get a Swap Quote on X Layer",
+        "category": "defi",
+        "difficulty": "medium",
+        "description": "Call get_swap_quote to quote swapping 1 OKB to USDT on X Layer via OKX DEX aggregator.",
+        "tool": "get_swap_quote",
+        "proof_hint": "JSON with from_token, to_token, and quote_amount",
+        "verify_type": "api_response_match",
+        "status": "open",
+    },
+    {
+        "id": "axon-008",
+        "title": "Analyze a Wallet with AI",
+        "category": "portfolio",
+        "difficulty": "hard",
+        "premium": True,
+        "description": "Call analyze_wallet (x402 premium) on any X Layer wallet. Report the risk_score and top_recommendation.",
+        "tool": "analyze_wallet",
+        "proof_hint": "JSON with risk_score and top_recommendation fields",
+        "verify_type": "text_quality",
+        "x402_required": True,
+        "x402_amount_okb": 0.001,
+        "status": "open",
+    },
+    {
+        "id": "axon-009",
+        "title": "Batch Security Scan 3 Tokens",
+        "category": "security",
+        "difficulty": "hard",
+        "description": "Call the batch_security_scan MCP tool with 3 X Layer token addresses. Return the risk-sorted results.",
+        "tool": "batch_security_scan",
+        "proof_hint": "JSON array with 3 results sorted by risk_score desc",
+        "verify_type": "data_match",
+        "status": "open",
+    },
+    {
+        "id": "axon-010",
+        "title": "Ask AXON in Natural Language",
+        "category": "ai",
+        "difficulty": "easy",
+        "description": (
+            "POST to /api/chat with question='Is the USDT contract on X Layer safe?'. "
+            "AXON routes your NL query to the right tool automatically."
+        ),
+        "tool": "handle_chat",
+        "proof_hint": "JSON with tool_used=scan_token_security and risk_label field",
+        "verify_type": "api_response_match",
+        "status": "open",
+    },
+]
 
 
 # ─── Intent Router ─────────────────────────────────────────────────────────────

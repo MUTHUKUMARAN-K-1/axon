@@ -110,7 +110,7 @@ Agents can discover and complete X Layer tasks — check gas, scan tokens for ho
 
 ## CLI — `npx @axon-xlayer/start`
 
-**Published on npm:** [`@axon-xlayer/start`](https://www.npmjs.com/package/@axon-xlayer/start)
+**Published on npm:** [`@axon-xlayer/start`](https://www.npmjs.com/package/@axon-xlayer/start) · **v1.3.0** · zero deps · works with Node ≥ 14
 
 The AXON CLI lets any developer or AI agent orient instantly — no API key, no install, zero deps.
 
@@ -120,6 +120,17 @@ npx @axon-xlayer/start
 
 # Machine-readable JSON context for AI agents
 npx @axon-xlayer/start --json > axon-context.json
+
+# List all 45 MCP tools
+npx @axon-xlayer/start tools
+
+# Filter tools by keyword
+npx @axon-xlayer/start tools security
+
+# Call any of the 45 tools directly
+npx @axon-xlayer/start call get_gas_price
+npx @axon-xlayer/start call get_rich_list --args '{"limit":5}'
+npx @axon-xlayer/start call get_block_detail --args '{"block_number":"latest"}'
 
 # Security scan a token
 npx @axon-xlayer/start scan 0x1e4a5963abfd975d8c9021ce480b42188849d41d

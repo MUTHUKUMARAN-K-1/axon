@@ -9,6 +9,7 @@
 [![MCP Tools](https://img.shields.io/badge/MCP%20Tools-45%20Live-cyan?style=for-the-badge)](https://axon-onld.onrender.com/mcp/tools)
 [![x402](https://img.shields.io/badge/x402-Payment%20Gate-yellow?style=for-the-badge)](https://axon-onld.onrender.com/api/x402/pricing)
 [![Plugin Store](https://img.shields.io/badge/Plugin%20Store-PR%20%2393-orange?style=for-the-badge)](https://github.com/okx/plugin-store/pull/93)
+[![LLMs.txt](https://img.shields.io/badge/LLMs.txt-AI%20Discoverable-brightgreen?style=for-the-badge)](https://axon-onld.onrender.com/llms.txt)
 
 ---
 
@@ -19,7 +20,7 @@
 | **X Layer Integration** | 45 MCP tools hitting X Layer RPC, OKLink, OKX DEX, OKX Onchain OS — all on Chain ID 196. [Mainnet TX](https://www.oklink.com/x-layer/tx/0x14a9bd9d2cbbb80be3373dd8b414104d107466247c48a2bd3c8ceb8eee58360b) |
 | **Smart Contracts** | 2 deployed contracts: [AxonVerdictLedger](https://www.oklink.com/xlayer/address/0x0191d5ada56672507fdb283ac59d45bde08a53f8) (public security oracle) + [AxonConfidenceBond](https://www.oklink.com/xlayer/address/0xe164011de202eb0ebf5f01ee5d9851c801a9c675) (skin-in-the-game bonds) |
 | **MCP / Plugin Store** | [PR #93 submitted](https://github.com/okx/plugin-store/pull/93) · 45 tools live at `https://axon-onld.onrender.com/mcp/tools` · Full OpenAPI at `/docs` |
-| **Innovation / AI** | x402 two-level micro-payments · Autonomous 5-min agent loop · 6-source parallel security scoring · Natural language → MCP tool routing |
+| **Innovation / AI** | x402 two-level micro-payments · Autonomous 5-min agent loop · 6-source parallel security scoring · Natural language → MCP tool routing · `/llms.txt` AI discovery · Agent registry + leaderboard · 10 on-chain task challenges |
 
 ---
 
@@ -46,6 +47,40 @@ AXON exposes **45 production-ready MCP tools** that any Claude, GPT, or open-sou
 **Arena:** X Layer Arena + Skills Arena  
 **Plugin Store:** [axon-xlayer-intelligence PR #93](https://github.com/okx/plugin-store/pull/93)  
 **Mainnet TX:** [`0x14a9bd9d...58360b`](https://www.oklink.com/x-layer/tx/0x14a9bd9d2cbbb80be3373dd8b414104d107466247c48a2bd3c8ceb8eee58360b) — x402 premium tool call on X Layer block #57163818
+
+---
+
+## For AI Agents
+
+AXON is built to be natively discoverable and usable by any AI agent — no API key, no account needed.
+
+### Instant Orientation
+
+```bash
+GET https://axon-onld.onrender.com/llms.txt
+```
+
+Fetch `/llms.txt` and your agent immediately knows every tool, endpoint, payment flow, and contract address. Works with Claude Code, Codex, LangChain, or any HTTP-capable agent.
+
+### Agent Registry & Leaderboard
+
+```bash
+# Register your agent
+POST https://axon-onld.onrender.com/api/agents
+{ "name": "my-agent", "wallet": "0x..." }
+
+# See rankings by scan count
+GET https://axon-onld.onrender.com/api/leaderboard
+```
+
+### Task Discovery (10 X Layer Challenges)
+
+```bash
+GET https://axon-onld.onrender.com/api/tasks
+GET https://axon-onld.onrender.com/api/tasks/axon-001
+```
+
+Agents can discover and complete X Layer tasks — check gas, scan tokens for honeypots, read on-chain verdicts, batch security scan, and more. Each task includes a `proof_hint` so agents know exactly what to submit.
 
 ---
 

@@ -1,0 +1,31 @@
+{
+  "name": "@axon-xlayer/start",
+  "version": "1.2.0",
+  "description": "CLI for AXON — Neural Intelligence Layer for X Layer. Scan tokens, analyze wallets, discover tasks, and orient any AI agent with 45 live MCP tools, x402 payments, and on-chain security oracle.",
+  "bin": {
+    "axon-xlayer": "./index.js",
+    "axon": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "axon", "xlayer", "mcp", "x402", "okb", "okx",
+    "defi", "security", "ai-agent", "web3", "blockchain",
+    "token-scanner", "honeypot", "onchain", "llms"
+  ],
+  "author": "MUTHUKUMARAN-K-1",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MUTHUKUMARAN-K-1/axon.git",
+    "directory": "cli"
+  },
+  "homepage": "https://axon-onld.onrender.com",
+  "bugs": {
+    "url": "https://github.com/MUTHUKUMARAN-K-1/axon/issues"
+  }
+}

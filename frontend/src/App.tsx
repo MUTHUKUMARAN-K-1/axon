@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { BrowserRouter, Routes, Route, NavLink, useNavigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { Brain, LayoutDashboard, Wallet, BarChart3, ArrowLeftRight, Terminal,
-  Zap, MessageSquare, Activity, Shield, Search, Sprout, ChevronRight, ChevronDown
+  Zap, MessageSquare, Activity, Shield, Search, Sprout, ChevronRight, ChevronDown,
+  Sun, Moon, Trophy, X as XIcon
 } from 'lucide-react'
 import WalletButton from './components/WalletButton'
 import Dashboard from './pages/Dashboard'
@@ -171,6 +172,9 @@ export default function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>(() =>
     (localStorage.getItem('axon-theme') as 'light' | 'dark') || 'dark'
   )
+  const [announcementVisible, setAnnouncementVisible] = useState(() =>
+    localStorage.getItem('axon-announcement-dismissed') !== '1'
+  )
   const [mode, setMode] = useState<'dashboard' | 'terminal'>('dashboard')
   const [toolDrawerOpen, setToolDrawerOpen] = useState(false)
   const [mcpConnected, setMcpConnected] = useState(false)
@@ -208,6 +212,27 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      {/* ─── Hackathon Announcement Bar ─── */}
+      {announcementVisible && (
+        <div className="announcement-bar">
+          <Trophy size={12} />
+          <span>OKX Build-X 2026 Hackathon</span>
+          <span className="announcement-bar-sep">·</span>
+          <span>X Layer Arena + Skills Arena</span>
+          <span className="announcement-bar-sep">·</span>
+          <a href="https://github.com/okx/plugin-store/pull/93" target="_blank" rel="noreferrer">Plugin Store PR #93</a>
+          <span className="announcement-bar-sep">·</span>
+          <a href="https://axon-onld.onrender.com/llms.txt" target="_blank" rel="noreferrer">llms.txt</a>
+          <span className="announcement-bar-sep">·</span>
+          <a href="https://axon-onld.onrender.com/docs" target="_blank" rel="noreferrer">API Docs</a>
+          <button
+            className="announcement-bar-dismiss"
+            onClick={() => { setAnnouncementVisible(false); localStorage.setItem('axon-announcement-dismissed', '1') }}
+            aria-label="Dismiss"
+          ><XIcon size={12} /></button>
+        </div>
+      )}
+
       {/* ─── Top Header Bar ─── */}
       <header className="axon-topbar">
         <div className="axon-topbar-left">
@@ -273,7 +298,7 @@ export default function App() {
             onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
             title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
           >
-            {theme === 'dark' ? '☀️' : '🌙'}
+            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
           </button>
 
           {/* Impersonate */}
@@ -283,7 +308,7 @@ export default function App() {
               onClick={() => setShowImpersonatePopover(p => !p)}
               title="View any X Layer address"
               style={isImpersonating ? { borderColor: '#F59E0B' } : {}}
-            >🕵️</button>
+            ><Search size={14} /></button>
             {showImpersonatePopover && (
               <>
                 <div
@@ -291,7 +316,7 @@ export default function App() {
                   onClick={() => setShowImpersonatePopover(false)}
                 />
                 <div className="impersonate-popover">
-                  <div className="impersonate-popover-title">🕵️ View Any Address</div>
+                  <div className="impersonate-popover-title" style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Search size={13} /> View Any Address</div>
                   <div className="impersonate-popover-desc">
                     Inspect any X Layer wallet's portfolio, DeFi positions, and security score without connecting.
                   </div>
@@ -334,7 +359,7 @@ export default function App() {
       {/* Impersonation banner */}
       {isImpersonating && (
         <div className="impersonate-banner">
-          <span>🕵️ Viewing <strong>{impersonateAddr.slice(0, 6)}…{impersonateAddr.slice(-4)}</strong> on X Layer</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Search size={12} /> Viewing <strong>{impersonateAddr.slice(0, 6)}…{impersonateAddr.slice(-4)}</strong> on X Layer</span>
           <button className="impersonate-exit" onClick={clearImpersonation}>✕ Exit</button>
         </div>
       )}

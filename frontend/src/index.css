@@ -786,3 +786,279 @@ button, a, input, select { transition-duration: 150ms; }
 
 /* Number font */
 .num { font-variant-numeric: tabular-nums; }
+
+/* ─────────────────────────────────────────
+   Hackathon Announcement Bar
+───────────────────────────────────────── */
+.announcement-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 8px 20px;
+  background: linear-gradient(90deg, #5B3CF5 0%, #06C4D0 40%, #00E5A0 70%, #5B3CF5 100%);
+  background-size: 300% 100%;
+  animation: gradient-shift 6s ease infinite;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  letter-spacing: 0.02em;
+  position: relative;
+  z-index: 101;
+  flex-shrink: 0;
+}
+.announcement-bar a {
+  color: rgba(255,255,255,0.9);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255,255,255,0.4);
+  transition: border-color 0.15s;
+}
+.announcement-bar a:hover { border-color: white; }
+.announcement-bar-sep {
+  opacity: 0.5;
+  font-weight: 300;
+}
+.announcement-bar-dismiss {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px 4px;
+  transition: color 0.15s;
+}
+.announcement-bar-dismiss:hover { color: white; }
+
+/* ─────────────────────────────────────────
+   Hero Section (Dashboard)
+───────────────────────────────────────── */
+.hero-section {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  margin-bottom: 32px;
+  padding: 48px 40px;
+  background: linear-gradient(135deg,
+    rgba(91,60,245,0.12) 0%,
+    rgba(6,196,208,0.08) 50%,
+    rgba(0,229,160,0.06) 100%);
+  border: 1px solid rgba(91,60,245,0.2);
+}
+[data-theme="dark"] .hero-section {
+  background: linear-gradient(135deg,
+    rgba(91,60,245,0.18) 0%,
+    rgba(6,196,208,0.10) 50%,
+    rgba(0,229,160,0.06) 100%);
+  border-color: rgba(124,92,245,0.25);
+}
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(91,60,245,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-section::after {
+  content: '';
+  position: absolute;
+  bottom: -40px; left: 30%;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(6,196,208,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(91,60,245,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91,60,245,0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+}
+
+/* ─────────────────────────────────────────
+   Feature Pills (Hero)
+───────────────────────────────────────── */
+.feature-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+.feature-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid rgba(91,60,245,0.2);
+  background: rgba(91,60,245,0.06);
+  color: var(--axon-primary);
+  cursor: default;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.feature-pill:hover {
+  background: rgba(91,60,245,0.12);
+  border-color: rgba(91,60,245,0.4);
+  transform: translateY(-1px);
+}
+[data-theme="dark"] .feature-pill {
+  background: rgba(124,92,245,0.12);
+  border-color: rgba(124,92,245,0.25);
+  color: #9B7EFF;
+}
+.feature-pill-accent {
+  background: rgba(6,196,208,0.08);
+  border-color: rgba(6,196,208,0.25);
+  color: #0891B2;
+}
+[data-theme="dark"] .feature-pill-accent {
+  background: rgba(6,196,208,0.12);
+  border-color: rgba(6,196,208,0.3);
+  color: #22D3EE;
+}
+.feature-pill-green {
+  background: rgba(16,185,129,0.08);
+  border-color: rgba(16,185,129,0.25);
+  color: #059669;
+}
+[data-theme="dark"] .feature-pill-green {
+  background: rgba(0,229,160,0.10);
+  border-color: rgba(0,229,160,0.25);
+  color: #00E5A0;
+}
+
+/* ─────────────────────────────────────────
+   Neon Card (dark mode highlight cards)
+───────────────────────────────────────── */
+.neon-card {
+  position: relative;
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.neon-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-strong);
+}
+[data-theme="dark"] .neon-card:hover {
+  box-shadow: 0 8px 40px rgba(124,92,245,0.25), 0 2px 8px rgba(0,0,0,0.5);
+  border-color: rgba(124,92,245,0.4);
+}
+
+/* ─────────────────────────────────────────
+   Contract Address Display
+───────────────────────────────────────── */
+.contract-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--surface-bg);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+.contract-chip:hover {
+  border-color: var(--axon-primary);
+  color: var(--axon-primary);
+  background: var(--axon-primary-light);
+}
+[data-theme="dark"] .contract-chip:hover {
+  background: rgba(124,92,245,0.1);
+}
+
+/* ─────────────────────────────────────────
+   Hackathon Stats Row
+───────────────────────────────────────── */
+.hack-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 20px;
+  border-right: 1px solid var(--border-default);
+}
+.hack-stat:last-child { border-right: none; }
+.hack-stat-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+}
+.hack-stat-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* ─────────────────────────────────────────
+   Scanline Effect (dark mode aesthetic)
+───────────────────────────────────────── */
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+[data-theme="dark"] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.015) 2px,
+    rgba(0,0,0,0.015) 4px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─────────────────────────────────────────
+   Typing Cursor Animation
+───────────────────────────────────────── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.typing-cursor::after {
+  content: '|';
+  animation: blink 1s ease infinite;
+  margin-left: 2px;
+  color: var(--axon-accent);
+}
+
+/* ─────────────────────────────────────────
+   Glow Pulse (for live indicators)
+───────────────────────────────────────── */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 4px rgba(0,229,160,0.4), 0 0 8px rgba(0,229,160,0.2); }
+  50% { box-shadow: 0 0 8px rgba(0,229,160,0.7), 0 0 16px rgba(0,229,160,0.4); }
+}
+[data-theme="dark"] .live-dot {
+  animation: glow-pulse 2s ease-in-out infinite;
+}

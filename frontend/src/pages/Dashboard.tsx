@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Activity, Zap, Layers, TrendingUp, BarChart3,
   Clock, RefreshCw, ExternalLink,
-  Globe, Database, ArrowRight
+  Globe, Database, ArrowRight, Shield, Brain,
+  MessageSquare, Terminal, Trophy, Link
 } from 'lucide-react'
 import { getMarketOverview, getTopPools } from '../services/api'
 import type { MarketOverview, Pool } from '../types/api'
 import { formatTokenPrice } from '../utils/format'
+
+const API = 'https://axon-onld.onrender.com'
 
 interface StatCardProps {
   label: string
@@ -65,12 +69,189 @@ function SkeletonStat() {
   )
 }
 
+// ── Hero Section ──────────────────────────────────────────────────────────────
+function HeroSection({ totalVerdicts }: { totalVerdicts: number | null }) {
+  const navigate = useNavigate()
+
+  const features = [
+    { label: '45 MCP Tools', variant: '', icon: <Brain size={12} /> },
+    { label: '6-Source Security Scan', variant: 'feature-pill-accent', icon: <Shield size={12} /> },
+    { label: 'x402 Micro-Payments', variant: 'feature-pill-green', icon: <Zap size={12} /> },
+    { label: 'On-Chain Oracle', variant: '', icon: <Link size={12} /> },
+    { label: 'Ask in Plain English', variant: 'feature-pill-accent', icon: <MessageSquare size={12} /> },
+    { label: 'Autonomous Agent Loop', variant: 'feature-pill-green', icon: <Terminal size={12} /> },
+  ]
+
+  const contracts = [
+    {
+      label: 'VerdictLedger',
+      addr: '0x0191d5ada5...8a53f8',
+      url: 'https://www.oklink.com/xlayer/address/0x0191d5ada56672507fdb283ac59d45bde08a53f8',
+      color: 'var(--axon-primary)',
+    },
+    {
+      label: 'ConfidenceBond',
+      addr: '0xe164011de2...ddb2e2',
+      url: 'https://www.oklink.com/xlayer/address/0xe164011de202eb0ebf5f01ee5d9851c801a9c675',
+      color: '#06C4D0',
+    },
+  ]
+
+  return (
+    <div className="hero-section animate-fade-up">
+      <div className="hero-grid" />
+
+      {/* Hackathon badge */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          padding: '4px 12px', borderRadius: 99,
+          background: 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(234,179,8,0.10))',
+          border: '1px solid rgba(245,158,11,0.35)',
+        }}>
+          <Trophy size={11} color="#F59E0B" />
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#B45309', letterSpacing: '0.04em' }}>
+            OKX Build-X 2026 · X Layer Arena + Skills Arena
+          </span>
+        </div>
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 5,
+          padding: '4px 10px', borderRadius: 99,
+          background: 'rgba(16,185,129,0.10)',
+          border: '1px solid rgba(16,185,129,0.25)',
+        }}>
+          <span className="live-dot" style={{ width: 6, height: 6 }} />
+          <span style={{ fontSize: 11, fontWeight: 600, color: '#059669' }}>LIVE on Mainnet</span>
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 32, alignItems: 'center', position: 'relative', zIndex: 1 }}>
+        {/* Left: headline + features */}
+        <div>
+          <h1 style={{
+            fontSize: 'clamp(28px, 4vw, 44px)',
+            fontWeight: 800,
+            fontFamily: "'Space Grotesk', sans-serif",
+            letterSpacing: '-0.04em',
+            lineHeight: 1.1,
+            marginBottom: 12,
+          }}>
+            <span className="text-gradient-animate">Neural Intelligence</span>
+            <br />
+            <span style={{ color: 'var(--text-primary)' }}>Layer for X Layer</span>
+          </h1>
+          <p style={{
+            fontSize: 15,
+            color: 'var(--text-secondary)',
+            lineHeight: 1.6,
+            maxWidth: 480,
+            marginBottom: 20,
+          }}>
+            Give your AI agents onchain senses — 45 MCP tools for security scanning,
+            DeFi analytics, wallet intelligence, and x402 micro-payments, all on X Layer Mainnet.
+          </p>
+
+          {/* CTA Buttons */}
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 24 }}>
+            <button
+              className="btn-primary"
+              style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, padding: '9px 18px' }}
+              onClick={() => navigate('/screener')}
+            >
+              <Shield size={14} /> Scan a Token
+            </button>
+            <button
+              className="btn-ghost"
+              style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13 }}
+              onClick={() => navigate('/ask')}
+            >
+              <MessageSquare size={14} /> Ask AXON
+            </button>
+            <a
+              href={`${API}/llms.txt`}
+              target="_blank"
+              rel="noreferrer"
+              className="btn-ghost"
+              style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, textDecoration: 'none' }}
+            >
+              <Terminal size={14} /> llms.txt
+            </a>
+          </div>
+
+          {/* Feature pills */}
+          <div className="feature-pills">
+            {features.map(f => (
+              <span key={f.label} className={`feature-pill ${f.variant}`}>
+                {f.icon}{f.label}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Right: stats + contracts */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 220 }}>
+          {/* Live stats box */}
+          <div style={{
+            background: 'var(--surface-card)',
+            border: '1px solid var(--border-default)',
+            borderRadius: 14,
+            overflow: 'hidden',
+          }}>
+            <div style={{
+              padding: '8px 14px',
+              borderBottom: '1px solid var(--border-default)',
+              fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
+              textTransform: 'uppercase', color: 'var(--text-muted)',
+            }}>Live Stats</div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {[
+                { value: '45', label: 'MCP Tools' },
+                { value: '2', label: 'Live Contracts' },
+                { value: totalVerdicts != null ? String(totalVerdicts) : '—', label: 'On-Chain Verdicts' },
+                { value: 'Chain 196', label: 'X Layer Mainnet' },
+              ].map((s, i) => (
+                <div key={i} style={{
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  padding: '8px 14px',
+                  borderBottom: i < 3 ? '1px solid var(--border-default)' : 'none',
+                }}>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{s.label}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', fontFamily: "'Space Grotesk',sans-serif" }} className="num">{s.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Contract addresses */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {contracts.map(c => (
+              <a
+                key={c.label}
+                href={c.url}
+                target="_blank"
+                rel="noreferrer"
+                className="contract-chip"
+                style={{ justifyContent: 'space-between' }}
+              >
+                <span style={{ color: c.color, fontWeight: 600, fontSize: 10 }}>{c.label}</span>
+                <span>{c.addr}</span>
+                <ExternalLink size={9} />
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function Dashboard() {
   const [market, setMarket] = useState<MarketOverview | null>(null)
   const [pools, setPools] = useState<Pool[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [totalVerdicts, setTotalVerdicts] = useState<number | null>(null)
 
   const fetchData = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true)
@@ -91,6 +272,18 @@ export default function Dashboard() {
     fetchData()
     const interval = setInterval(() => fetchData(), 30000)
     return () => clearInterval(interval)
+  }, [])
+
+  useEffect(() => {
+    fetch(`${API}/mcp/call`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tool_name: 'get_total_verdicts', arguments: {} }),
+      signal: AbortSignal.timeout(8000),
+    })
+      .then(r => r.json())
+      .then(d => setTotalVerdicts(d?.result?.total_verdicts ?? null))
+      .catch(() => {})
   }, [])
 
   const net = market?.network ?? {}
@@ -137,6 +330,9 @@ export default function Dashboard() {
 
   return (
     <div style={{ padding: '32px', maxWidth: 1200 }}>
+      {/* Hero */}
+      <HeroSection totalVerdicts={totalVerdicts} />
+
       {/* Header */}
       <div
         className="animate-fade-up"

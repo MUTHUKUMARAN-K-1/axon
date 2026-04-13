@@ -9,7 +9,7 @@ const { ethers } = require("ethers");
 // ─── Config ──────────────────────────────────────────────────────────────────
 const RPC_URL    = "https://rpc.xlayer.tech";
 const CHAIN_ID   = 196;
-const FROM_KEY   = "0x592d3bfec619308db11f20922fb50f6783db8b9251dd27e92ebe9b6bdad2275a";
+const FROM_KEY   = process.env.ORACLE_PRIVATE_KEY; // never hardcode keys
 const TO_ADDRESS = "0xDb82c0d91E057E05600C8F8dc836bEb41da6df14";
 const AMOUNT_OKB = 0.00005;   // 50 microOKB per TX — 10 TXs = 0.0005 total, fits in 0.000953 balance
 const TIMES      = 10;

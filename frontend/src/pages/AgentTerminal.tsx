@@ -177,7 +177,7 @@ export default function AgentTerminal() {
           flex: 1,
           padding: '20px',
           overflowY: 'auto',
-          background: '#FDFCFF',
+          background: 'var(--surface-card)',
           animationDelay: '120ms',
           minHeight: 0,
           fontFamily: "'JetBrains Mono', monospace",

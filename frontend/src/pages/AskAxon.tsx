@@ -74,16 +74,16 @@ function PaymentCard({ p }: { p: NonNullable<Message['payment402']> }) {
         </div>
       )}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
-        <div style={{ background: 'white', borderRadius: 8, padding: '8px 10px', border: '1px solid rgba(245,158,11,0.2)' }}>
+        <div style={{ background: 'var(--surface-card)', borderRadius: 8, padding: '8px 10px', border: '1px solid rgba(245,158,11,0.2)' }}>
           <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>Tool</div>
           <div style={{ fontSize: 12, fontFamily: "'JetBrains Mono', monospace", color: 'var(--text-primary)' }}>{p.tool_name}</div>
         </div>
-        <div style={{ background: 'white', borderRadius: 8, padding: '8px 10px', border: '1px solid rgba(245,158,11,0.2)' }}>
+        <div style={{ background: 'var(--surface-card)', borderRadius: 8, padding: '8px 10px', border: '1px solid rgba(245,158,11,0.2)' }}>
           <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>Amount</div>
           <div style={{ fontSize: 12, fontWeight: 700, color: '#D97706' }}>{p.amount_okb} OKB</div>
         </div>
       </div>
-      <div style={{ background: 'white', borderRadius: 8, padding: '8px 10px', border: '1px solid rgba(245,158,11,0.2)', marginBottom: 10 }}>
+      <div style={{ background: 'var(--surface-card)', borderRadius: 8, padding: '8px 10px', border: '1px solid rgba(245,158,11,0.2)', marginBottom: 10 }}>
         <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>Pay to (X Layer)</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', monospace", color: 'var(--text-primary)', flex: 1, wordBreak: 'break-all' }}>{p.payment_address}</div>
@@ -128,7 +128,7 @@ function MessageBubble({ msg }: { msg: Message }) {
         <div style={{
           background: isUser
             ? 'linear-gradient(135deg, #5B3CF5, #7C3AED)'
-            : 'white',
+            : 'var(--surface-card)',
           color: isUser ? 'white' : 'var(--text-primary)',
           border: isUser ? 'none' : '1px solid var(--border-default)',
           borderRadius: isUser ? '16px 4px 16px 16px' : '4px 16px 16px 16px',
@@ -234,13 +234,13 @@ export default function AskAxon() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--bg-base)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--surface-bg)' }}>
 
       {/* Header */}
       <div style={{
         padding: '20px 32px 16px',
         borderBottom: '1px solid var(--border-default)',
-        background: 'white',
+        background: 'var(--surface-card)',
         boxShadow: 'var(--shadow-sm)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -291,7 +291,7 @@ export default function AskAxon() {
                   onClick={() => sendMessage(text)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 10,
-                    background: 'white', border: '1px solid var(--border-default)',
+                    background: 'var(--surface-card)', border: '1px solid var(--border-default)',
                     borderRadius: 12, padding: '12px 14px', cursor: 'pointer',
                     textAlign: 'left', transition: 'all 0.15s ease',
                     boxShadow: 'var(--shadow-sm)',
@@ -330,11 +330,11 @@ export default function AskAxon() {
       <div style={{
         padding: '16px 32px 24px',
         borderTop: '1px solid var(--border-default)',
-        background: 'white',
+        background: 'var(--surface-card)',
       }}>
         <div style={{
           display: 'flex', gap: 12, alignItems: 'center',
-          background: 'var(--bg-subtle)',
+          background: 'var(--surface-bg)',
           border: '2px solid var(--border-default)',
           borderRadius: 16, padding: '8px 8px 8px 16px',
           transition: 'border-color 0.15s ease',

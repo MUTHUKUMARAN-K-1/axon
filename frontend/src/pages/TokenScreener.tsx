@@ -139,7 +139,7 @@ export default function TokenScreener() {
       {/* Search bar */}
       <div style={{
         display: 'flex', gap: 10, marginBottom: 24,
-        background: 'white', border: '1px solid var(--border-default)',
+        background: 'var(--surface-card)', border: '1px solid var(--border-default)',
         borderRadius: 14, padding: '10px 14px',
         boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
       }}>
@@ -173,7 +173,7 @@ export default function TokenScreener() {
           disabled={signalsLoading}
           style={{
             padding: '6px 14px', borderRadius: 8, border: '1px solid var(--border-default)',
-            cursor: 'pointer', background: 'white',
+            cursor: 'pointer', background: 'var(--surface-card)',
             color: 'var(--text-primary)', fontSize: 12, fontWeight: 600,
             display: 'flex', alignItems: 'center', gap: 6,
           }}
@@ -229,7 +229,7 @@ export default function TokenScreener() {
         <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 20 }}>
           {/* Risk gauge */}
           <div style={{
-            background: 'white', border: '1px solid var(--border-default)',
+            background: 'var(--surface-card)', border: '1px solid var(--border-default)',
             borderRadius: 16, padding: 24, textAlign: 'center',
             boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
           }}>
@@ -269,7 +269,7 @@ export default function TokenScreener() {
 
             {/* Market data */}
             <div style={{
-              background: 'white', border: '1px solid var(--border-default)',
+              background: 'var(--surface-card)', border: '1px solid var(--border-default)',
               borderRadius: 12, padding: '14px 18px',
               display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12,
             }}>
@@ -289,7 +289,7 @@ export default function TokenScreener() {
             {/* Flags summary */}
             {scan.flags.length > 0 && (
               <div style={{
-                background: 'white', border: '1px solid var(--border-default)',
+                background: 'var(--surface-card)', border: '1px solid var(--border-default)',
                 borderRadius: 12, padding: '14px 18px',
               }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -320,7 +320,7 @@ export default function TokenScreener() {
       {/* ── Tab: Security Stages ── */}
       {scan && tab === 'security' && (
         <div style={{
-          background: 'white', border: '1px solid var(--border-default)',
+          background: 'var(--surface-card)', border: '1px solid var(--border-default)',
           borderRadius: 16, padding: 24,
         }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20 }}>
@@ -337,7 +337,7 @@ export default function TokenScreener() {
       {/* ── Tab: Holders ── */}
       {scan && tab === 'holders' && (
         <div style={{
-          background: 'white', border: '1px solid var(--border-default)',
+          background: 'var(--surface-card)', border: '1px solid var(--border-default)',
           borderRadius: 16, padding: 24,
         }}>
           <div style={{ display: 'flex', gap: 20, marginBottom: 20 }}>
@@ -390,7 +390,7 @@ export default function TokenScreener() {
       {/* ── Tab: Liquidity ── */}
       {scan && tab === 'liquidity' && (
         <div style={{
-          background: 'white', border: '1px solid var(--border-default)',
+          background: 'var(--surface-card)', border: '1px solid var(--border-default)',
           borderRadius: 16, padding: 24,
         }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
@@ -436,7 +436,7 @@ export default function TokenScreener() {
             ? (
               <div style={{
                 padding: 40, textAlign: 'center',
-                background: 'white', border: '1px solid var(--border-default)', borderRadius: 16,
+                background: 'var(--surface-card)', border: '1px solid var(--border-default)', borderRadius: 16,
               }}>
                 <TrendingUp size={32} color="var(--text-muted)" style={{ marginBottom: 12 }} />
                 <div style={{ color: 'var(--text-muted)', fontSize: 14 }}>
@@ -446,7 +446,7 @@ export default function TokenScreener() {
             )
             : signals.map((s, i) => (
               <div key={i} style={{
-                background: 'white', border: '1px solid var(--border-default)',
+                background: 'var(--surface-card)', border: '1px solid var(--border-default)',
                 borderRadius: 14, padding: '16px 20px', marginBottom: 12,
                 display: 'flex', alignItems: 'center', gap: 16,
               }}>
@@ -497,7 +497,7 @@ export default function TokenScreener() {
       {!scan && signals.length === 0 && !loading && (
         <div style={{
           padding: '48px 32px', textAlign: 'center',
-          background: 'white', border: '1px solid var(--border-default)', borderRadius: 20,
+          background: 'var(--surface-card)', border: '1px solid var(--border-default)', borderRadius: 20,
           boxShadow: '0 2px 20px rgba(0,0,0,0.04)',
         }}>
           <div style={{

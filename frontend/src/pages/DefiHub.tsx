@@ -5,7 +5,7 @@ const API = import.meta.env.VITE_API_URL || 'https://axon-onld.onrender.com'
 
 function Card({ title, children, action }: { title: string; children: React.ReactNode; action?: React.ReactNode }) {
   return (
-    <div style={{ background: 'white', borderRadius: 16, border: '1px solid var(--border-default)', padding: 24, boxShadow: 'var(--shadow-sm)' }}>
+    <div style={{ background: 'var(--surface-card)', borderRadius: 16, border: '1px solid var(--border-default)', padding: 24, boxShadow: 'var(--shadow-sm)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{title}</div>
         {action}
@@ -152,7 +152,7 @@ export default function DefiHub() {
             <input value={address} onChange={e => setAddress(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && loadNfts()}
               placeholder="0x wallet address"
-              style={{ flex: 1, padding: '10px 14px', borderRadius: 10, border: '2px solid var(--border-default)', fontSize: 13, fontFamily: 'monospace', outline: 'none' }}
+              style={{ flex: 1, padding: '10px 14px', borderRadius: 10, border: '1.5px solid var(--border-default)', background: 'var(--surface-bg)', color: 'var(--text-primary)', fontSize: 13, fontFamily: 'monospace', outline: 'none' }}
             />
             <button onClick={loadNfts} disabled={loadingNft} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: 'var(--axon-primary)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
               {loadingNft ? <Loader2 size={14} className="spin" /> : <><Image size={14} /> Load NFTs</>}
@@ -163,7 +163,7 @@ export default function DefiHub() {
           ) : nfts?.nfts?.length > 0 ? (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12 }}>
               {nfts.nfts.slice(0, 12).map((n: any, i: number) => (
-                <div key={i} style={{ borderRadius: 12, border: '1px solid var(--border-default)', overflow: 'hidden', background: 'white' }}>
+                <div key={i} style={{ borderRadius: 12, border: '1px solid var(--border-default)', overflow: 'hidden', background: 'var(--surface-card)' }}>
                   {n.image_url ? (
                     <img src={n.image_url} alt={n.name} style={{ width: '100%', aspectRatio: '1', objectFit: 'cover' }} />
                   ) : (

@@ -110,7 +110,7 @@ Agents can discover and complete X Layer tasks — check gas, scan tokens for ho
 
 ## CLI — `npx @axon-xlayer/start`
 
-**Published on npm:** [`@axon-xlayer/start`](https://www.npmjs.com/package/@axon-xlayer/start) · **v1.3.0** · zero deps · works with Node ≥ 14
+**Published on npm:** [`@axon-xlayer/start`](https://www.npmjs.com/package/@axon-xlayer/start) · **v1.5.0** · zero deps · works with Node ≥ 14
 
 The AXON CLI lets any developer or AI agent orient instantly — no API key, no install, zero deps.
 

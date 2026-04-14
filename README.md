@@ -267,53 +267,53 @@ AxonConfidenceBond(0xe164011de202eb0ebf5f01ee5d9851c801a9c675).challenge(tokenAd
 
 ## MCP Tools — Complete List (45 Tools)
 
-| # | Tool | Category | Premium | Description |
-|---|------|----------|---------|-------------|
-| 1 | `get_wallet_portfolio` | Portfolio | free | All token balances + USD values on X Layer |
-| 2 | `get_transaction_history` | Portfolio | free | Recent wallet transactions with type/value |
-| 3 | `get_defi_positions` | Portfolio | free | Active DeFi positions (LP, staking, lending) |
-| 4 | `get_native_balance` | Portfolio | free | Native OKB balance for any address |
-| 5 | `analyze_wallet` | AI | 🔒 x402 | Full AI-powered wallet analysis: risk score + recommendations |
-| 6 | `compare_wallets` | AI | 🔒 x402 | Side-by-side AI comparison of two wallets |
-| 7 | `get_token_price` | Market | free | Real-time price, 24h change, market cap, volume |
-| 8 | `get_market_overview` | Market | free | Gas + block + top pools + key prices snapshot |
-| 9 | `get_gas_price` | Market | free | Current gas price in gwei + priority fee |
-| 10 | `get_block_info` | Market | free | Latest block: number, timestamp, gas utilization |
-| 11 | `get_xlayer_stats` | Market | free | X Layer chain metadata + ecosystem links |
-| 12 | `get_uniswap_pool_data` | Uniswap | free | Pool TVL/volume/fees for any token pair |
-| 13 | `get_uniswap_top_pools` | Uniswap | free | Top X Layer pools ranked by TVL |
-| 14 | `get_uniswap_token_analytics` | Uniswap | free | 7-day OHLC + liquidity for any token |
-| 15 | `search_pools_by_token` | Uniswap | free | Find all Uniswap V3 pools containing a specific token |
-| 16 | `get_pool_ohlc` | Uniswap | free | OHLC candlestick data for any pool (configurable days) |
-| 17 | `get_pool_fees` | Uniswap | free | Fee revenue and estimated APY for any pool |
-| 18 | `get_uniswap_protocol_stats` | Uniswap | free | Protocol-level TVL, volume, fee totals, pool count |
-| 19 | `get_swap_quote` | Swap | free | Best route via OKX DEX aggregator |
-| 20 | `get_yield_opportunities` | Intelligence | free | Yield farming above configurable APY threshold |
-| 21 | `find_arbitrage_opportunities` | Intelligence | 🔒 x402 | Price discrepancy scanner across all routes |
-| 22 | `scan_token_security` | Security | free | 6-source risk score: honeypot, tax, holders, liquidity, DexScreener, DefiLlama |
-| 23 | `get_smart_money_signals` | Security | free | Velocity-based accumulation signals across all Uniswap V3 pools |
-| 24 | `get_wallet_net_worth` | Onchain OS | free | Total portfolio value across all chains |
-| 25 | `get_token_detail` | Onchain OS | free | Rich token metadata: holders, FDV, socials, description |
-| 26 | `lookup_transaction` | Onchain OS | free | Decode any transaction: status, from/to, value, method |
-| 27 | `get_supported_tokens` | Onchain OS | free | All tokens supported by OKX DEX on X Layer |
-| 28 | `get_cross_chain_quote` | Onchain OS | free | Cross-chain bridge quote via OKX aggregator |
-| 29 | `check_address_security` | Security | free | OKX on-chain address risk: blacklist, phishing, contract risk |
-| 30 | `check_url_safety` | Security | free | Phishing/malicious URL detection via OKX |
-| 31 | `get_nft_holdings` | Onchain OS | free | NFT portfolio for any wallet on X Layer |
-| 32 | `get_yield_products` | Onchain OS | free | Available yield/farming products on X Layer |
-| 33 | `get_swap_execution` | Onchain OS | free | Full swap calldata for execution via OKX aggregator |
-| 34 | `get_address_info` | OKLink | free | Entity label, balance, tx count, first/last TX time |
-| 35 | `get_token_transfers` | OKLink | free | ERC-20 token transfer history for any wallet |
-| 36 | `get_block_list` | OKLink | free | Most recent blocks on X Layer |
-| 37 | `get_block_detail` | OKLink | free | Full block details: gas, validator, base fee, TX count |
-| 38 | `get_pending_transactions` | OKLink | free | Unconfirmed mempool transactions on X Layer |
-| 39 | `get_contract_info` | OKLink | free | Contract verification, creator, deploy TX, license |
-| 40 | `estimate_gas` | OKLink | free | Gas estimation for any transaction on X Layer |
-| 41 | `get_token_transfer_list` | OKLink | free | All recent transfers for a specific token contract |
-| 42 | `get_rich_list` | OKLink | free | Top holders (rich list) for OKB or any token |
-| 43 | `get_internal_transactions` | OKLink | free | Internal contract calls (traces) for any transaction |
-| 44 | `get_onchain_verdict` | Security | free | Read AXON's on-chain verdict for any token from AxonVerdictLedger |
-| 45 | `get_total_verdicts` | Security | free | Total number of security verdicts published to the on-chain oracle |
+| # | Tool | Category | Premium | Required Args | Description |
+|---|------|----------|---------|---------------|-------------|
+| 1 | `get_wallet_portfolio` | Portfolio | free | `address` | All token balances + USD values on X Layer |
+| 2 | `get_transaction_history` | Portfolio | free | `address` | Recent wallet transactions with type/value |
+| 3 | `get_defi_positions` | Portfolio | free | `address` | Active DeFi positions (LP, staking, lending) |
+| 4 | `get_native_balance` | Portfolio | free | `address` | Native OKB balance for any address |
+| 5 | `analyze_wallet` | AI | 🔒 x402 | `address` | Full AI-powered wallet analysis: risk score + recommendations |
+| 6 | `compare_wallets` | AI | 🔒 x402 | `address_a`, `address_b` | Side-by-side AI comparison of two wallets |
+| 7 | `get_token_price` | Market | free | `token_address` | Real-time price, 24h change, market cap, volume |
+| 8 | `get_market_overview` | Market | free | — | Gas + block + top pools + key prices snapshot |
+| 9 | `get_gas_price` | Market | free | — | Current gas price in gwei + priority fee |
+| 10 | `get_block_info` | Market | free | — | Latest block: number, timestamp, gas utilization |
+| 11 | `get_xlayer_stats` | Market | free | — | X Layer chain metadata + ecosystem links |
+| 12 | `get_uniswap_pool_data` | Uniswap | free | `token0`, `token1` | Pool TVL/volume/fees for any token pair |
+| 13 | `get_uniswap_top_pools` | Uniswap | free | — | Top X Layer pools ranked by TVL |
+| 14 | `get_uniswap_token_analytics` | Uniswap | free | `token_address` | 7-day OHLC + liquidity for any token |
+| 15 | `search_pools_by_token` | Uniswap | free | `token_address` | Find all Uniswap V3 pools containing a specific token |
+| 16 | `get_pool_ohlc` | Uniswap | free | `pool_address` | OHLC candlestick data for any pool (configurable days) |
+| 17 | `get_pool_fees` | Uniswap | free | `pool_address` | Fee revenue and estimated APY for any pool |
+| 18 | `get_uniswap_protocol_stats` | Uniswap | free | — | Protocol-level TVL, volume, fee totals, pool count |
+| 19 | `get_swap_quote` | Swap | free | `from_token`, `to_token`, `amount` | Best route via OKX DEX aggregator |
+| 20 | `get_yield_opportunities` | Intelligence | free | — | Yield farming above configurable APY threshold |
+| 21 | `find_arbitrage_opportunities` | Intelligence | 🔒 x402 | — | Price discrepancy scanner across all routes |
+| 22 | `scan_token_security` | Security | free | `token_address` | 6-source risk score: honeypot, tax, holders, liquidity, DexScreener, DefiLlama |
+| 23 | `get_smart_money_signals` | Security | free | — | Velocity-based accumulation signals across all Uniswap V3 pools |
+| 24 | `get_wallet_net_worth` | Onchain OS | free | `address` | Total portfolio value across all chains |
+| 25 | `get_token_detail` | Onchain OS | free | `token_address` | Rich token metadata: holders, FDV, socials, description |
+| 26 | `lookup_transaction` | Onchain OS | free | `tx_hash` | Decode any transaction: status, from/to, value, method |
+| 27 | `get_supported_tokens` | Onchain OS | free | — | All tokens supported by OKX DEX on X Layer |
+| 28 | `get_cross_chain_quote` | Onchain OS | free | `from_chain`, `to_chain`, `from_token`, `to_token`, `amount` | Cross-chain bridge quote via OKX aggregator |
+| 29 | `check_address_security` | Security | free | `address` | OKX on-chain address risk: blacklist, phishing, contract risk |
+| 30 | `check_url_safety` | Security | free | `url` | Phishing/malicious URL detection via OKX |
+| 31 | `get_nft_holdings` | Onchain OS | free | `address` | NFT portfolio for any wallet on X Layer |
+| 32 | `get_yield_products` | Onchain OS | free | — | Available yield/farming products on X Layer |
+| 33 | `get_swap_execution` | Onchain OS | free | `from_token`, `to_token`, `amount`, `user_address` | Full swap calldata for execution via OKX aggregator |
+| 34 | `get_address_info` | OKLink | free | `address` | Entity label, balance, tx count, first/last TX time |
+| 35 | `get_token_transfers` | OKLink | free | `address` | ERC-20 token transfer history for any wallet |
+| 36 | `get_block_list` | OKLink | free | — | Most recent blocks on X Layer |
+| 37 | `get_block_detail` | OKLink | free | `block_number` | Full block details: gas, validator, base fee, TX count |
+| 38 | `get_pending_transactions` | OKLink | free | — | Unconfirmed mempool transactions on X Layer |
+| 39 | `get_contract_info` | OKLink | free | `contract_address` | Contract verification, creator, deploy TX, license |
+| 40 | `estimate_gas` | OKLink | free | `to` | Gas estimation for any transaction on X Layer |
+| 41 | `get_token_transfer_list` | OKLink | free | `token_contract` | All recent transfers for a specific token contract |
+| 42 | `get_rich_list` | OKLink | free | — | Top holders (rich list) for OKB or any token |
+| 43 | `get_internal_transactions` | OKLink | free | `tx_hash` | Internal contract calls (traces) for any transaction |
+| 44 | `get_onchain_verdict` | Security | free | `token_address` | Read AXON's on-chain verdict for any token from AxonVerdictLedger |
+| 45 | `get_total_verdicts` | Security | free | — | Total number of security verdicts published to the on-chain oracle |
 
 > 🔒 x402 = Premium tool requiring OKB micro-payment on X Layer. See `/api/x402/pricing`.
 

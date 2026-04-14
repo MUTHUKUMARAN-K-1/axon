@@ -20,6 +20,41 @@ const QUICK_COMMANDS = [
   { label: 'Yield Opps', tool: 'get_yield_opportunities', args: { min_apy: 5 }, icon: CheckCircle2 },
 ]
 
+/* Required args per tool — shown in help */
+const TOOL_ARGS: Record<string, string> = {
+  get_wallet_portfolio:        'address',
+  get_transaction_history:     'address',
+  get_defi_positions:          'address',
+  get_native_balance:          'address',
+  analyze_wallet:              'address  [x402]',
+  compare_wallets:             'address_a, address_b  [x402]',
+  get_token_price:             'token_address',
+  get_uniswap_pool_data:       'token0, token1',
+  get_uniswap_token_analytics: 'token_address',
+  search_pools_by_token:       'token_address',
+  get_pool_ohlc:               'pool_address',
+  get_pool_fees:               'pool_address',
+  get_swap_quote:              'from_token, to_token, amount',
+  find_arbitrage_opportunities:'—  [x402]',
+  scan_token_security:         'token_address',
+  get_wallet_net_worth:        'address',
+  get_token_detail:            'token_address',
+  lookup_transaction:          'tx_hash',
+  get_cross_chain_quote:       'from_chain, to_chain, from_token, to_token, amount',
+  check_address_security:      'address',
+  check_url_safety:            'url',
+  get_nft_holdings:            'address',
+  get_swap_execution:          'from_token, to_token, amount, user_address',
+  get_address_info:            'address',
+  get_token_transfers:         'address',
+  get_block_detail:            'block_number',
+  get_contract_info:           'contract_address',
+  estimate_gas:                'to',
+  get_token_transfer_list:     'token_contract',
+  get_internal_transactions:   'tx_hash',
+  get_onchain_verdict:         'token_address',
+}
+
 const LOG_STYLES: Record<LogEntry['type'], { color: string; icon: ReactNode; prefix: string }> = {
   input:  { color: '#5B3CF5', icon: <ChevronRight size={11} />, prefix: '' },
   status: { color: '#8B87A8', icon: <Loader2 size={11} style={{ animation: 'spin 1s linear infinite' }} />, prefix: '' },
@@ -76,7 +111,11 @@ export default function AgentTerminal() {
     addLog('input', `axon.call("${toolName}", ${JSON.stringify(args)})`)
 
     if (toolName.trim() === 'help') {
-      addLog('result', `Available tools:\n${tools.map(t => `  • ${t}`).join('\n')}`)
+      const lines = tools.map(t => {
+        const args = TOOL_ARGS[t]
+        return args ? `  ${t.padEnd(36)} args: ${args}` : `  ${t}`
+      })
+      addLog('result', `45 MCP Tools — usage: tool_name {"arg": "value"}\n\n${lines.join('\n')}`)
       setRunning(false)
       return
     }

@@ -27,15 +27,15 @@ USDT_XLAYER = "0x1e4a5963abfd975d8c9021ce480b42188849d41d"
 WOKB_XLAYER = "0xe538905cf8410324e03a5a23c1c177a474d59b2"
 
 
-def _get_okx_headers(path: str, method: str = "GET", body: str = "") -> dict:
+def _get_okx_headers(path: str, method: str = "GET", body: str = "", params: dict = None) -> dict:
     """Generate OKX API auth headers (HMAC-SHA256).
 
-    BUG FIXED: original used `hmac.new()` which does not exist in Python.
-    Correct call is `hmac.new()` → actually `hmac.new` is NOT the right API.
-    The correct Python stdlib call is `hmac.new(key, msg, digestmod)`.
-    Also fixed: original always used 'GET' in the HMAC message regardless of
-    the actual HTTP method, which causes 401s on POST calls.
+    OKX signature preamble: timestamp + method + requestPath + body
+    For GET requests, requestPath MUST include the query string.
+    Pass params dict and this function will append them to the signed path.
     """
+    import urllib.parse
+
     api_key = os.getenv("OKX_API_KEY", "")
     secret = os.getenv("OKX_SECRET_KEY", "")
     passphrase = os.getenv("OKX_PASSPHRASE", "")
@@ -43,8 +43,14 @@ def _get_okx_headers(path: str, method: str = "GET", body: str = "") -> dict:
     if not api_key or not secret:
         return {}
 
+    # For GET requests, include query params in the signed path
+    if method == "GET" and params:
+        signed_path = f"{path}?{urllib.parse.urlencode(params)}"
+    else:
+        signed_path = path
+
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
-    msg = f"{timestamp}{method}{path}{body}"
+    msg = f"{timestamp}{method}{signed_path}{body}"
     sig = base64.b64encode(
         hmac.new(secret.encode(), msg.encode(), hashlib.sha256).digest()
     ).decode()
@@ -78,7 +84,7 @@ async def get_wallet_portfolio(address: str, chain_id: str = XLAYER_CHAIN_ID) ->
             "chainIndex": chain_id,
             "filter": "1",
         }
-        headers = _get_okx_headers(path)
+        headers = _get_okx_headers(path, params=params)
 
         async with httpx.AsyncClient(timeout=15.0) as client:
             r = await client.get(
@@ -139,7 +145,7 @@ async def get_token_price(
             "chainIndex": chain_id,
             "tokenAddress": token_address,
         }
-        headers = _get_okx_headers(path)
+        headers = _get_okx_headers(path, params=params)
 
         async with httpx.AsyncClient(timeout=10.0) as client:
             r = await client.get(
@@ -185,7 +191,7 @@ async def get_transaction_history(
             "chainIndex": chain_id,
             "limit": str(min(limit, 100)),
         }
-        headers = _get_okx_headers(path)
+        headers = _get_okx_headers(path, params=params)
 
         async with httpx.AsyncClient(timeout=15.0) as client:
             r = await client.get(
@@ -247,7 +253,7 @@ async def get_defi_positions(
     try:
         path = "/api/v5/wallet/defi/investment/positions"
         params = {"chainId": chain_id, "address": address}
-        headers = _get_okx_headers(path)
+        headers = _get_okx_headers(path, params=params)
 
         if not headers:
             # No API key — return empty positions rather than crashing
@@ -402,10 +408,12 @@ async def get_nft_holdings(address: str, chain_id: str = XLAYER_CHAIN_ID) -> dic
     try:
         path = "/api/v5/wallet/asset/nft-list"
         headers = _get_okx_headers(path)
+        nft_params = {"address": address, "chainIndex": chain_id}
+        headers = _get_okx_headers(path, params=nft_params)
         async with httpx.AsyncClient(timeout=15.0) as client:
             r = await client.get(
                 f"{OKX_BASE}{path}",
-                params={"address": address, "chainIndex": chain_id},
+                params=nft_params,
                 headers=headers or None,
             )
             data = r.json()
@@ -442,11 +450,12 @@ async def get_yield_products(chain_id: str = XLAYER_CHAIN_ID) -> dict:
     """
     try:
         path = "/api/v5/wallet/defi/yield/product-list"
-        headers = _get_okx_headers(path)
+        yield_params = {"chainId": chain_id}
+        headers = _get_okx_headers(path, params=yield_params)
         async with httpx.AsyncClient(timeout=15.0) as client:
             r = await client.get(
                 f"{OKX_BASE}{path}",
-                params={"chainId": chain_id},
+                params=yield_params,
                 headers=headers or None,
             )
             data = r.json()
@@ -531,11 +540,12 @@ async def get_wallet_net_worth(address: str) -> dict:
     """
     try:
         path = "/api/v5/wallet/asset/net-worth"
-        headers = _get_okx_headers(path)
+        nw_params = {"address": address}
+        headers = _get_okx_headers(path, params=nw_params)
         async with httpx.AsyncClient(timeout=15.0) as client:
             r = await client.get(
                 f"{OKX_BASE}{path}",
-                params={"address": address},
+                params=nw_params,
                 headers=headers or None,
             )
             data = r.json()
@@ -568,11 +578,12 @@ async def get_token_detail(token_address: str, chain_id: str = XLAYER_CHAIN_ID) 
     """
     try:
         path = "/api/v5/wallet/token/token-detail"
-        headers = _get_okx_headers(path)
+        td_params = {"chainIndex": chain_id, "tokenAddress": token_address}
+        headers = _get_okx_headers(path, params=td_params)
         async with httpx.AsyncClient(timeout=12.0) as client:
             r = await client.get(
                 f"{OKX_BASE}{path}",
-                params={"chainIndex": chain_id, "tokenAddress": token_address},
+                params=td_params,
                 headers=headers or None,
             )
             data = r.json()
@@ -613,11 +624,12 @@ async def lookup_transaction(tx_hash: str, chain_id: str = XLAYER_CHAIN_ID) -> d
     """
     try:
         path = "/api/v5/wallet/post-transaction/transaction-by-hash"
-        headers = _get_okx_headers(path)
+        tx_params = {"chainIndex": chain_id, "txHash": tx_hash}
+        headers = _get_okx_headers(path, params=tx_params)
         async with httpx.AsyncClient(timeout=15.0) as client:
             r = await client.get(
                 f"{OKX_BASE}{path}",
-                params={"chainIndex": chain_id, "txHash": tx_hash},
+                params=tx_params,
                 headers=headers or None,
             )
             data = r.json()

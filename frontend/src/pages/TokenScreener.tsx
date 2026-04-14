@@ -274,10 +274,10 @@ export default function TokenScreener() {
               display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12,
             }}>
               {[
-                { label: 'Symbol', value: scan.market.symbol || '—' },
-                { label: 'Price', value: scan.market.price_usd !== '0' ? `$${parseFloat(scan.market.price_usd).toFixed(6)}` : '—' },
-                { label: '24h Change', value: scan.market.price_change_24h !== '0' ? `${scan.market.price_change_24h}%` : '—' },
-                { label: 'TVL (Uni V3)', value: scan.market.tvl_usd > 0 ? `$${scan.market.tvl_usd.toLocaleString()}` : '—' },
+                { label: 'Symbol', value: scan.market?.symbol || '—' },
+                { label: 'Price', value: scan.market?.price_usd && scan.market.price_usd !== '0' ? `$${parseFloat(scan.market.price_usd).toFixed(6)}` : '—' },
+                { label: '24h Change', value: scan.market?.price_change_24h && scan.market.price_change_24h !== '0' ? `${scan.market.price_change_24h}%` : '—' },
+                { label: 'TVL (Uni V3)', value: scan.market?.tvl_usd > 0 ? `$${scan.market.tvl_usd.toLocaleString()}` : '—' },
               ].map(({ label, value }) => (
                 <div key={label}>
                   <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 2 }}>{label}</div>
@@ -395,10 +395,10 @@ export default function TokenScreener() {
         }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
             {[
-              { label: 'Total Value Locked', value: `$${scan.stages.liquidity.tvl_usd.toLocaleString()}`, color: '#10B981' },
-              { label: '7-Day Volume', value: `$${scan.stages.liquidity.volume_7d_usd.toLocaleString()}`, color: '#5B3CF5' },
-              { label: '7-Day Price Change', value: `${scan.stages.activity.price_change_7d_pct.toFixed(2)}%`, color: scan.stages.activity.price_change_7d_pct > 0 ? '#10B981' : '#EF4444' },
-              { label: 'Contract Txs', value: scan.stages.contract.tx_count.toLocaleString(), color: '#06C4D0' },
+              { label: 'Total Value Locked', value: scan.stages.liquidity.tvl_usd > 0 ? `$${scan.stages.liquidity.tvl_usd.toLocaleString()}` : '—', color: '#10B981' },
+              { label: '7-Day Volume', value: scan.stages.liquidity.volume_7d_usd > 0 ? `$${scan.stages.liquidity.volume_7d_usd.toLocaleString()}` : '—', color: '#5B3CF5' },
+              { label: '7-Day Price Change', value: scan.stages.activity.price_change_7d_pct != null ? `${scan.stages.activity.price_change_7d_pct.toFixed(2)}%` : '—', color: (scan.stages.activity.price_change_7d_pct ?? 0) > 0 ? '#10B981' : '#EF4444' },
+              { label: 'Contract Txs', value: scan.stages.contract.tx_count != null ? scan.stages.contract.tx_count.toLocaleString() : '—', color: '#06C4D0' },
             ].map(({ label, value, color }) => (
               <div key={label} style={{
                 padding: '16px 18px', borderRadius: 12,

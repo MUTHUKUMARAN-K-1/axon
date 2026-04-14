@@ -12,7 +12,7 @@ const AGENT_WALLET = "0xDb82c0d91E057E05600C8F8dc836bEb41da6df14";
 const CHAIN_ID = 196;
 const PLUGIN_PR = "https://github.com/okx/plugin-store/pull/93";
 const GITHUB = "https://github.com/MUTHUKUMARAN-K-1/axon";
-const VERSION = "1.3.0";
+const VERSION = "1.4.0";
 
 // ─── ANSI Colors (zero deps) ─────────────────────────────────────────────────
 const c = {
@@ -636,7 +636,7 @@ async function main() {
     npx @axon-xlayer/start tools security
     npx @axon-xlayer/start call get_gas_price
     npx @axon-xlayer/start call get_rich_list --args '{"limit":5}'
-    npx @axon-xlayer/start call get_wallet_portfolio --args '{"wallet_address":"0x..."}'
+    npx @axon-xlayer/start call get_wallet_portfolio --args '{"address":"0x..."}'
     npx @axon-xlayer/start scan 0x1e4a5963abfd975d8c9021ce480b42188849d41d
     npx @axon-xlayer/start wallet 0xDb82c0d91E057E05600C8F8dc836bEb41da6df14
     npx @axon-xlayer/start tasks

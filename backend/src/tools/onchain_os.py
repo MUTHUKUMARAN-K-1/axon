@@ -81,7 +81,7 @@ async def get_wallet_portfolio(address: str, chain_id: str = XLAYER_CHAIN_ID) ->
         path = "/api/v5/wallet/asset/all-token-balances-by-address"
         params = {
             "address": address,
-            "chainIndex": chain_id,
+            "chains": chain_id,   # OKX WaaS uses "chains" not "chainIndex" for this endpoint
             "filter": "1",
         }
         headers = _get_okx_headers(path, params=params)

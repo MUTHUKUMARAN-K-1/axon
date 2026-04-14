@@ -1,6 +1,6 @@
 {
   "name": "@axon-xlayer/start",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "CLI for AXON — Neural Intelligence Layer for X Layer. Scan tokens, analyze wallets, discover tasks, and orient any AI agent with 45 live MCP tools, x402 payments, and on-chain security oracle.",
   "bin": {
     "axon-xlayer": "./index.js",

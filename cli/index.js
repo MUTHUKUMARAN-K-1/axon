@@ -12,7 +12,7 @@ const AGENT_WALLET = "0xDb82c0d91E057E05600C8F8dc836bEb41da6df14";
 const CHAIN_ID = 196;
 const PLUGIN_PR = "https://github.com/okx/plugin-store/pull/93";
 const GITHUB = "https://github.com/MUTHUKUMARAN-K-1/axon";
-const VERSION = "1.4.0";
+const VERSION = "1.5.0";
 
 // ─── ANSI Colors (zero deps) ─────────────────────────────────────────────────
 const c = {

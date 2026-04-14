@@ -1,7 +1,8 @@
 """
 AXON — OKLink Explorer Tools
 Wraps OKX OKLink blockchain explorer APIs for X Layer intelligence.
-Chain short name: XLAYER | Chain ID: 196
+Uses the dedicated X Layer API paths: /api/v5/xlayer/...
+Auth: Ok-Access-Key header (same OKX API key)
 """
 
 import httpx
@@ -11,7 +12,7 @@ import logging
 logger = logging.getLogger("axon.tools.oklink")
 
 OKLINK_BASE = "https://www.oklink.com"
-XLAYER_SHORT = "XLAYER"
+XLAYER_API = f"{OKLINK_BASE}/api/v5/xlayer"
 
 
 def _oklink_headers() -> dict:
@@ -34,8 +35,8 @@ async def get_address_info(address: str) -> dict:
     try:
         async with httpx.AsyncClient(timeout=12.0) as client:
             r = await client.get(
-                f"{OKLINK_BASE}/api/v5/explorer/address/information-evm",
-                params={"chainShortName": XLAYER_SHORT, "address": address},
+                f"{XLAYER_API}/address/information-evm",
+                params={"address": address},
                 headers=_oklink_headers(),
             )
             data = r.json()
@@ -68,7 +69,6 @@ async def get_token_transfers(address: str, token_contract: str = "", limit: int
     Returns ERC-20 token transfer history for a wallet via OKLink.
     """
     params = {
-        "chainShortName": XLAYER_SHORT,
         "address": address,
         "limit": str(min(limit, 100)),
     }
@@ -77,7 +77,7 @@ async def get_token_transfers(address: str, token_contract: str = "", limit: int
     try:
         async with httpx.AsyncClient(timeout=15.0) as client:
             r = await client.get(
-                f"{OKLINK_BASE}/api/v5/explorer/address/token-transfer-list",
+                f"{XLAYER_API}/address/token-transaction-list",
                 params=params,
                 headers=_oklink_headers(),
             )
@@ -117,8 +117,8 @@ async def get_block_list(limit: int = 10) -> dict:
     try:
         async with httpx.AsyncClient(timeout=12.0) as client:
             r = await client.get(
-                f"{OKLINK_BASE}/api/v5/explorer/block/block-list",
-                params={"chainShortName": XLAYER_SHORT, "limit": str(min(limit, 50))},
+                f"{XLAYER_API}/block/block-list",
+                params={"limit": str(min(limit, 50))},
                 headers=_oklink_headers(),
             )
             data = r.json()
@@ -154,8 +154,8 @@ async def get_block_detail(block_number: str) -> dict:
     try:
         async with httpx.AsyncClient(timeout=12.0) as client:
             r = await client.get(
-                f"{OKLINK_BASE}/api/v5/explorer/block/block-detail",
-                params={"chainShortName": XLAYER_SHORT, "height": block_number},
+                f"{XLAYER_API}/block/block-fills",
+                params={"height": block_number},
                 headers=_oklink_headers(),
             )
             data = r.json()
@@ -189,13 +189,13 @@ async def get_pending_transactions(address: str = "", limit: int = 20) -> dict:
     MCP Tool: get_pending_transactions
     Returns unconfirmed/pending transactions on X Layer mempool via OKLink.
     """
-    params = {"chainShortName": XLAYER_SHORT, "limit": str(min(limit, 100))}
+    params = {"limit": str(min(limit, 100))}
     if address:
         params["address"] = address
     try:
         async with httpx.AsyncClient(timeout=12.0) as client:
             r = await client.get(
-                f"{OKLINK_BASE}/api/v5/explorer/transaction/unconfirmed-list",
+                f"{XLAYER_API}/transaction/unconfirmed-transaction-list",
                 params=params,
                 headers=_oklink_headers(),
             )
@@ -233,8 +233,8 @@ async def get_contract_info(contract_address: str) -> dict:
     try:
         async with httpx.AsyncClient(timeout=12.0) as client:
             r = await client.get(
-                f"{OKLINK_BASE}/api/v5/explorer/contract/information",
-                params={"chainShortName": XLAYER_SHORT, "contractAddress": contract_address},
+                f"{XLAYER_API}/contract/verify-contract-info",
+                params={"contractAddress": contract_address},
                 headers=_oklink_headers(),
             )
             data = r.json()
@@ -269,7 +269,7 @@ async def estimate_gas(to: str, data: str = "0x", value: str = "0") -> dict:
             r = await client.get(
                 f"{OKLINK_BASE}/api/v5/explorer/gas/estimation",
                 params={
-                    "chainShortName": XLAYER_SHORT,
+                    "chainShortName": "XLAYER",
                     "to": to,
                     "txData": data,
                     "value": value,
@@ -301,9 +301,8 @@ async def get_token_transfer_list(token_contract: str, limit: int = 20) -> dict:
     try:
         async with httpx.AsyncClient(timeout=15.0) as client:
             r = await client.get(
-                f"{OKLINK_BASE}/api/v5/explorer/token/transaction-list",
+                f"{XLAYER_API}/token/transaction-list",
                 params={
-                    "chainShortName": XLAYER_SHORT,
                     "tokenContractAddress": token_contract,
                     "limit": str(min(limit, 100)),
                 },
@@ -341,16 +340,13 @@ async def get_rich_list(token_contract: str = "", limit: int = 20) -> dict:
     MCP Tool: get_rich_list
     Returns top holders (rich list) for OKB or any token on X Layer via OKLink.
     """
-    params = {
-        "chainShortName": XLAYER_SHORT,
-        "limit": str(min(limit, 50)),
-    }
+    params = {"limit": str(min(limit, 50))}
     if token_contract:
         params["tokenContractAddress"] = token_contract
     try:
         async with httpx.AsyncClient(timeout=15.0) as client:
             r = await client.get(
-                f"{OKLINK_BASE}/api/v5/explorer/token/position-list",
+                f"{XLAYER_API}/token/position-list",
                 params=params,
                 headers=_oklink_headers(),
             )
@@ -388,8 +384,8 @@ async def get_internal_transactions(tx_hash: str) -> dict:
     try:
         async with httpx.AsyncClient(timeout=15.0) as client:
             r = await client.get(
-                f"{OKLINK_BASE}/api/v5/explorer/transaction/internal-transaction-detail",
-                params={"chainShortName": XLAYER_SHORT, "txId": tx_hash},
+                f"{XLAYER_API}/transaction/internal-transaction-detail",
+                params={"txId": tx_hash},
                 headers=_oklink_headers(),
             )
             data = r.json()

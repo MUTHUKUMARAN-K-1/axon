@@ -103,7 +103,17 @@ export default function Explorer() {
       {result && (
         <Card title="Result">
           {result.error ? (
-            <div style={{ color: '#EF4444', fontSize: 13 }}>{result.error}</div>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 14px', borderRadius: 10, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
+              <Search size={15} color="#EF4444" style={{ flexShrink: 0, marginTop: 1 }} />
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#EF4444' }}>Lookup unavailable</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                  {result.error?.includes('OK-ACCESS-KEY') || result.error?.includes('oklink')
+                    ? 'OKLink Explorer API key is not configured on this deployment. Block data and address lookups require a valid API key.'
+                    : result.error}
+                </div>
+              </div>
+            </div>
           ) : tab === 'address' ? (
             <>
               <Row label="Address" value={result.address || input} mono />

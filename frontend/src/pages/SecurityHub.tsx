@@ -106,7 +106,17 @@ export default function SecurityHub() {
           </div>
           {addressResult && (
             addressResult.error ? (
-              <div style={{ color: '#EF4444', fontSize: 13 }}>{addressResult.error}</div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 14px', borderRadius: 10, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                <XCircle size={15} color="#EF4444" style={{ flexShrink: 0, marginTop: 1 }} />
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#EF4444' }}>Check unavailable</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                    {addressResult.error?.includes('OK-ACCESS-KEY') || addressResult.error === 'Not Found'
+                      ? 'OKX security credentials are not configured on this deployment. Token Security Scan below is still available.'
+                      : addressResult.error}
+                  </div>
+                </div>
+              </div>
             ) : (
               <>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, padding: '10px 14px', borderRadius: 10, background: addressResult.is_blacklisted ? '#FEE2E2' : '#D1FAE5' }}>
@@ -141,7 +151,17 @@ export default function SecurityHub() {
           </div>
           {urlResult && (
             urlResult.error ? (
-              <div style={{ color: '#EF4444', fontSize: 13 }}>{urlResult.error}</div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 14px', borderRadius: 10, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                <XCircle size={15} color="#EF4444" style={{ flexShrink: 0, marginTop: 1 }} />
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#EF4444' }}>Check unavailable</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                    {urlResult.error?.includes('OK-ACCESS-KEY') || urlResult.error === 'Not Found'
+                      ? 'OKX security credentials are not configured on this deployment.'
+                      : urlResult.error}
+                  </div>
+                </div>
+              </div>
             ) : (
               <>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, padding: '10px 14px', borderRadius: 10, background: urlResult.is_malicious ? '#FEE2E2' : '#D1FAE5' }}>
@@ -174,7 +194,13 @@ export default function SecurityHub() {
           </div>
           {tokenResult && (
             tokenResult.error ? (
-              <div style={{ color: '#EF4444', fontSize: 13 }}>{tokenResult.error}</div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 14px', borderRadius: 10, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                <AlertTriangle size={15} color="#EF4444" style={{ flexShrink: 0, marginTop: 1 }} />
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#EF4444' }}>Scan unavailable</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{tokenResult.error}</div>
+                </div>
+              </div>
             ) : (
               <>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>

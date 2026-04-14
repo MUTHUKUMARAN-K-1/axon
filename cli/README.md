@@ -167,8 +167,8 @@ Access any tool via `npx @axon-xlayer/start call <tool_name>` or directly via `P
 
 | Tool | Price | Description | Args |
 |------|-------|-------------|------|
-| `analyze_wallet` | 0.001 OKB | AI risk analysis of any wallet | `wallet_address` |
-| `compare_wallets` | 0.001 OKB | Side-by-side wallet comparison | `wallet_a`, `wallet_b` |
+| `analyze_wallet` | 0.001 OKB | AI risk analysis of any wallet | `address` |
+| `compare_wallets` | 0.001 OKB | Side-by-side wallet comparison | `address_a`, `address_b` |
 | `find_arbitrage_opportunities` | 0.002 OKB | Cross-pool price discrepancy scanner | — |
 
 ---
@@ -187,12 +187,12 @@ curl https://axon-onld.onrender.com/api/x402/pricing
 curl -X POST https://axon-onld.onrender.com/mcp/call \
   -H "Content-Type: application/json" \
   -H "X-PAYMENT: 0x<your_tx_hash>" \
-  -d '{"tool_name":"analyze_wallet","arguments":{"wallet_address":"0x..."}}'
+  -d '{"tool_name":"analyze_wallet","arguments":{"address":"0x..."}}'
 ```
 
 Via CLI (auto-shows payment instructions when 402 returned):
 ```bash
-npx @axon-xlayer/start call analyze_wallet --args '{"wallet_address":"0x..."}'
+npx @axon-xlayer/start call analyze_wallet --args '{"address":"0x..."}'
 ```
 
 ---

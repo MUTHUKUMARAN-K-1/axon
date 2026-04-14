@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/axon-logo.png" alt="AXON — Neural Intelligence Layer for AI Agents" width="600" />
+</p>
+
 # AXON — Neural Intelligence Layer for X Layer
 
 > **Give your AI agents onchain senses.**

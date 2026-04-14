@@ -122,9 +122,10 @@ async def publish_verdict(
         gas_price_hex = await _rpc("eth_gasPrice", [])
         gas_price = int(gas_price_hex, 16)
 
+        from eth_utils import to_checksum_address
         tx = {
             "nonce": nonce,
-            "to": CONTRACT_ADDRESS,
+            "to": to_checksum_address(CONTRACT_ADDRESS),
             "data": "0x" + calldata.hex(),
             "gas": 120_000,       # publishVerdict costs ~60k gas
             "gasPrice": gas_price,
@@ -209,6 +210,7 @@ async def lock_bond(token_address: str) -> Optional[str]:
     try:
         from eth_account import Account
 
+        from eth_utils import to_checksum_address
         acct = Account.from_key(ORACLE_PRIVATE_KEY)
         token_clean = token_address.lower().removeprefix("0x").zfill(64)
         calldata = "0x" + _LOCK_BOND_SELECTOR.hex() + token_clean
@@ -218,7 +220,7 @@ async def lock_bond(token_address: str) -> Optional[str]:
 
         tx = {
             "nonce": nonce,
-            "to": CONFIDENCE_BOND_ADDRESS,
+            "to": to_checksum_address(CONFIDENCE_BOND_ADDRESS),
             "data": calldata,
             "gas": 120_000,
             "gasPrice": gas_price,
